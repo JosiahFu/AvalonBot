@@ -3,7 +3,7 @@ package bot.avalon.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Quest(
+data class Quest(
     val size: Int,
     val requiredFails: Int = 1,
     var winner: Team? = null,

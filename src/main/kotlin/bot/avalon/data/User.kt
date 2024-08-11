@@ -8,7 +8,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-class User(val id: String)
+// Placeholder for real user class
+@JvmInline
+value class User(val id: String)
 
 class UserSerializer : KSerializer<User> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("User", PrimitiveKind.STRING)

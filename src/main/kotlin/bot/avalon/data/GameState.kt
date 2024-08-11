@@ -8,7 +8,7 @@ import bot.avalon.data.SerializableUser as User
 sealed interface GameState {
     @Serializable
     @SerialName("start")
-    class Start(
+    data class Start(
         val players: MutableSet<User> = mutableSetOf(),
         val roles: MutableMap<Role, Boolean> = mutableMapOf(),
     ) : GameState
@@ -20,21 +20,35 @@ sealed interface GameState {
 
         fun getVisibleTo(role: Role): Set<User> = players.filterValues { it in role.visible }.keys
         fun getVisibleTo(player: User): Set<User> = getVisibleTo(players[player]!!)
+
+        val winner: Team?
+            get() = when {
+                quests.count { it.winner == Team.GOOD } >= 3 -> Team.GOOD
+                quests.count { it.winner == Team.EVIL } >= 3 -> Team.EVIL
+                else -> null
+            }
     }
 
     @Serializable
     @SerialName("discussion")
-    class Discussion(
+    data class Discussion(
         override val players: Map<User, Role>,
         override val quests: List<bot.avalon.data.Quest>,
         var fails: Int = 0,
     ) : PlayState {
         constructor(prevState: PlayState): this(prevState.players, prevState.quests)
+
+        override val winner: Team?
+            get() = if (fails > 5) Team.EVIL else super.winner
+
+        companion object {
+            fun fromFailed(prevState: Proposal) = Discussion(prevState.players, prevState.quests, prevState.fails + 1)
+        }
     }
 
     @Serializable
     @SerialName("proposal")
-    class Proposal(
+    data class Proposal(
         override val players: Map<User, Role>,
         override val quests: List<bot.avalon.data.Quest>,
         var fails: Int,
@@ -49,7 +63,7 @@ sealed interface GameState {
 
     @Serializable
     @SerialName("quest")
-    class Quest(
+    data class Quest(
         override val players: Map<User, Role>,
         override val quests: List<bot.avalon.data.Quest>,
         val team: Set<User>,
@@ -60,11 +74,12 @@ sealed interface GameState {
 
     @Serializable
     @SerialName("assassin")
-    class Assassin(
-        override val players: Map<User, Role>,
-        override val quests: List<bot.avalon.data.Quest>
-    ) : PlayState {
-        constructor(prevState: PlayState): this(prevState.players, prevState.quests)
+    data class Assassin(
+        val players: Map<User, Role>,
+    ) : GameState {
+        constructor(prevState: PlayState): this(prevState.players)
+
+        fun getWinner(guess: User) = if (players[guess] == Role.MERLIN) Team.GOOD else Team.EVIL
     }
 }
 

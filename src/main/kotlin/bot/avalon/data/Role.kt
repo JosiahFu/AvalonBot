@@ -45,9 +45,7 @@ enum class Role(val team: Team, val isOptional: Boolean = false) {
 data class TeamSizes(
     val good: Int,
     val evil: Int,
-) {
-    fun toMap(): Map<Team, Int> = mapOf(Team.GOOD to this.good, Team.EVIL to this.evil)
-}
+)
 
 fun getTeamSizes(players: Int): TeamSizes = when (players) {
     5 -> TeamSizes(good = 3, evil = 2)
@@ -63,7 +61,6 @@ fun getRoles(players: Int, enabled: Set<Role>): List<Role> {
     val roles = enumEntries<Role>()
     val (good, evil) = getTeamSizes(players)
     val specialRoles = roles.filter { !it.isDefault && (!it.isOptional || it in enabled) }
-    println(specialRoles)
 
     return specialRoles +
         List(good - specialRoles.count { it.team == Team.GOOD }) { Role.defaultGood } +
