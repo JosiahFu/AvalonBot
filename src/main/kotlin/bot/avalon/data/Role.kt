@@ -57,7 +57,7 @@ fun getTeamSizes(players: Int): TeamSizes = when (players) {
     else -> throw IllegalArgumentException("Number of players must be between 5 and 10")
 }
 
-fun getRoles(players: Int, enabled: Set<Role>): List<Role> {
+fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
     val roles = enumEntries<Role>()
     val (good, evil) = getTeamSizes(players)
     val specialRoles = roles.filter { !it.isDefault && (!it.isOptional || it in enabled) }
@@ -67,7 +67,7 @@ fun getRoles(players: Int, enabled: Set<Role>): List<Role> {
         List(evil - specialRoles.count { it.team == Team.EVIL }) { Role.defaultEvil }
 }
 
-fun assignRoles(players: Set<User>, optionalsEnabled: Set<Role>): Map<User, Role> {
+fun assignRoles(players: Collection<User>, optionalsEnabled: Collection<Role>): Map<User, Role> {
     val remainingRoles = getRoles(players.size, optionalsEnabled).toMutableList()
 
     return players.associateWith { remainingRoles.removeRandom() }

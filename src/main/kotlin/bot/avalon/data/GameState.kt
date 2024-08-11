@@ -52,12 +52,12 @@ sealed interface GameState {
         override val players: Map<User, Role>,
         override val quests: List<bot.avalon.data.Quest>,
         var fails: Int,
-        val proposedTeam: Set<User>,
+        val proposedTeam: Collection<User>,
         val votes: MutableMap<User, Boolean> = mutableMapOf(),
     ) : PlayState {
         constructor(
             prevState: Discussion,
-            proposedTeam: Set<User>,
+            proposedTeam: Collection<User>,
         ): this(prevState.players, prevState.quests, prevState.fails, proposedTeam)
     }
 
@@ -66,7 +66,7 @@ sealed interface GameState {
     data class Quest(
         override val players: Map<User, Role>,
         override val quests: List<bot.avalon.data.Quest>,
-        val team: Set<User>,
+        val team: Collection<User>,
         val votes: MutableMap<User, Boolean> = mutableMapOf(),
     ) : PlayState {
         constructor(prevState: Proposal): this(prevState.players, prevState.quests, prevState.proposedTeam)
