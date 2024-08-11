@@ -16,7 +16,7 @@ sealed interface GameState {
     @Serializable
     sealed interface PlayState : GameState {
         val players: Map<User, Role>
-        val quests: List<bot.avalon.data.Quest>
+        val quests: List<Quest>
 
         fun getVisibleTo(role: Role): Set<User> = players.filterValues { it in role.visible }.keys
         fun getVisibleTo(player: User): Set<User> = getVisibleTo(players[player]!!)
@@ -33,7 +33,7 @@ sealed interface GameState {
     @SerialName("discussion")
     data class Discussion(
         override val players: Map<User, Role>,
-        override val quests: List<bot.avalon.data.Quest>,
+        override val quests: List<Quest>,
         var fails: Int = 0,
     ) : PlayState {
         constructor(prevState: PlayState): this(prevState.players, prevState.quests)
@@ -50,7 +50,7 @@ sealed interface GameState {
     @SerialName("proposal")
     data class Proposal(
         override val players: Map<User, Role>,
-        override val quests: List<bot.avalon.data.Quest>,
+        override val quests: List<Quest>,
         var fails: Int,
         val proposedTeam: Collection<User>,
         val votes: MutableMap<User, Boolean> = mutableMapOf(),
@@ -65,7 +65,7 @@ sealed interface GameState {
     @SerialName("quest")
     data class Quest(
         override val players: Map<User, Role>,
-        override val quests: List<bot.avalon.data.Quest>,
+        override val quests: List<Quest>,
         val team: Collection<User>,
         val votes: MutableMap<User, Boolean> = mutableMapOf(),
     ) : PlayState {
