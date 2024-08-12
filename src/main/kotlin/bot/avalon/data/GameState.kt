@@ -3,13 +3,15 @@ package bot.avalon.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+var STATE: GameState? = null
+
 @Serializable
 sealed interface GameState {
     @Serializable
     @SerialName("start")
     data class Start(
         val players: MutableSet<UserId> = mutableSetOf(),
-        val roles: MutableMap<Role, Boolean> = mutableMapOf(),
+        val optionalRoles: MutableSet<Role> = mutableSetOf()
     ) : GameState
 
     @Serializable
@@ -78,7 +80,7 @@ sealed interface GameState {
     ) : GameState {
         constructor(prevState: PlayState): this(prevState.players)
 
-        fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.GOOD else Team.EVIL
+        fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.EVIL else Team.GOOD
     }
 }
 

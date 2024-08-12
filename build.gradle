@@ -16,6 +16,7 @@ dependencies {
     implementation "dev.kord:kord-core:${project.kord_version}"
     implementation "io.github.cdimascio:dotenv-kotlin:${project.kdotenv_version}"
     implementation "org.jetbrains.kotlin:kotlin-reflect:${project.kreflect_version}"
+    implementation("org.slf4j:slf4j-simple:${project.slf4j_version}")
 }
 
 test {
@@ -23,4 +24,9 @@ test {
 }
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.register('run', JavaExec) {
+    mainClass = 'bot.avalon.Main'
+    classpath = sourceSets.main.runtimeClasspath
 }
