@@ -1,33 +1,48 @@
 package bot.avalon
 
-import bot.avalon.data.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import bot.avalon.data.SerializableUser as User
+import bot.avalon.data.Role
+import bot.avalon.kord.commands
+import bot.avalon.kord.enabledRole
+import bot.avalon.kord.optionalRoleButtons
+import dev.kord.core.Kord
+import dev.kord.core.behavior.edit
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.on
+import dev.kord.gateway.Intent
+import dev.kord.rest.builder.message.actionRow
+import io.github.cdimascio.dotenv.Dotenv
 
-fun main() {
-    val state: GameState = GameState.Discussion(assignRoles(setOf(
-        User("P1"),
-        User("P2"),
-        User("P3"),
-        User("P4"),
-        User("P5"),
-        User("P6"),
-        User("P7"),
-    ), setOf(
-        Role.MORDRED
-    )), getQuests(players = 7))
+suspend fun main() {
+    val dotenv = Dotenv.load()
 
-    val json = Json.Default.encodeToString(state)
-    println(json)
-    Json.Default.decodeFromString<GameState>(json).also {
-        println(it)
-        when (it) {
-            is GameState.Start -> {}
-            is GameState.Discussion -> println(it.players)
-            is GameState.Proposal -> {}
-            is GameState.Quest -> {}
-            is GameState.Assassin -> {}
+    Kord(dotenv["BOT_TOKEN"]).apply {
+        for (command in commands) {
+            createGlobalChatInputCommand(command.name, command.description, command.builder)
+        }
+
+        on<ChatInputCommandInteractionCreateEvent> {
+            commands.find { it.name == interaction.invokedCommandName }?.run { execute() }
+        }
+
+        on<ButtonInteractionCreateEvent> {
+            val role = Role.valueOf(interaction.componentId)
+            if (role in enabledRole) {
+                enabledRole.remove(role)
+            } else {
+                enabledRole.add(role)
+            }
+            interaction.message.edit {
+                actionRow {
+                    optionalRoleButtons(enabledRole)
+                }
+            }
+            interaction.deferPublicMessageUpdate()
+        }
+
+        login {
+            println("Logged in!")
+            intents += Intent.GuildMessages + Intent.Guilds
         }
     }
 }

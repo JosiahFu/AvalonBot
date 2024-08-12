@@ -12,7 +12,10 @@ repositories {
 
 dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${project.kserialization_version}"
+    implementation "dev.kord:kord-core:${project.kord_version}"
+    implementation "io.github.cdimascio:dotenv-kotlin:${project.kdotenv_version}"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:${project.kreflect_version}"
 }
 
 test {

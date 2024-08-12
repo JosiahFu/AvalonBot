@@ -1,8 +1,8 @@
 package bot.avalon.data
 
 import bot.avalon.lib.removeRandom
+import java.util.*
 import kotlin.enums.enumEntries
-import bot.avalon.data.SerializableUser as User
 
 enum class Team { GOOD, EVIL }
 
@@ -21,6 +21,10 @@ enum class Role(val team: Team, val isOptional: Boolean = false) {
 
     val isDefault: Boolean
         get() = this == defaultGood || this == defaultEvil
+
+    override fun toString(): String {
+        return name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    }
 
     companion object {
         init {
@@ -67,7 +71,7 @@ fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
         List(evil - specialRoles.count { it.team == Team.EVIL }) { Role.defaultEvil }
 }
 
-fun assignRoles(players: Collection<User>, optionalsEnabled: Collection<Role>): Map<User, Role> {
+fun assignRoles(players: Collection<UserId>, optionalsEnabled: Collection<Role>): Map<UserId, Role> {
     val remainingRoles = getRoles(players.size, optionalsEnabled).toMutableList()
 
     return players.associateWith { remainingRoles.removeRandom() }
