@@ -2,9 +2,9 @@
 
 package bot.avalon
 
+import bot.avalon.kord.message.InteractiveMessage
 import bot.avalon.kord.StartMessage
 import bot.avalon.kord.commands
-import bot.avalon.kord.messageTypes
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -30,7 +30,7 @@ suspend fun main() {
         }
 
         on<ButtonInteractionCreateEvent> {
-            messageTypes.find { interaction.componentId in it.ids }!!.onInteract(interaction, interaction.componentId)
+            InteractiveMessage.of(interaction.componentId).onInteract(interaction, interaction.componentId)
         }
 
         kord = this

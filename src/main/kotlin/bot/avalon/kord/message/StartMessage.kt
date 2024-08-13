@@ -3,57 +3,19 @@ package bot.avalon.kord
 import bot.avalon.data.GameState
 import bot.avalon.data.Role
 import bot.avalon.data.STATE
+import bot.avalon.data.gameState
 import bot.avalon.kord
+import bot.avalon.kord.message.InteractiveMessage
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
-import dev.kord.core.behavior.edit
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.entity.interaction.ActionInteraction
 import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 import kotlin.enums.enumEntries
-
-val messageTypes = mutableListOf<InteractiveMessage>()
-
-abstract class InteractiveMessage {
-    abstract suspend fun content(state: GameState?): String
-    abstract suspend fun MessageBuilder.components(state: GameState?)
-
-    suspend fun ButtonInteraction.updateContent(state: GameState?) {
-        this.message.edit {
-            content = content(state)
-        }
-    }
-
-    suspend fun ButtonInteraction.updateComponents(state: GameState?) {
-        this.message.edit {
-            components(state)
-        }
-    }
-
-    suspend fun ButtonInteraction.updateBoth(state: GameState?) {
-        this.message.edit {
-            content = content(state)
-            components(state)
-        }
-    }
-
-    open suspend fun onInteract(interaction: ButtonInteraction, componentId: String) {}
-
-    abstract val ids: Collection<String>
-
-    init {
-        @Suppress("LeakingThis")
-        messageTypes.add(this)
-    }
-}
-
-suspend fun MessageBuilder.using(message: InteractiveMessage, state: GameState?) {
-    with(message) {
-        content = message.content(state)
-        components(state)
-    }
-}
 
 object StartMessage : InteractiveMessage() {
     const val START = "start"
@@ -63,7 +25,8 @@ object StartMessage : InteractiveMessage() {
 
     override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + enumEntries<Role>().map(Role::name)
 
-    override suspend fun content(state: GameState?): String {
+    override suspend fun content(interaction: ActionInteraction): String {
+        val state = interaction.gameState
         return if (state is GameState.Start) """
             # Avalon
             Players joined:${if (state.players.isEmpty()) " None" else ""}
@@ -74,7 +37,8 @@ object StartMessage : InteractiveMessage() {
         """.trimIndent()
     }
 
-    override suspend fun MessageBuilder.components(state: GameState?) {
+    override suspend fun MessageBuilder.components(interaction: ActionInteraction) {
+        val state = interaction.gameState
         val valid = state is GameState.Start
 
         if (valid) actionRow {
@@ -112,28 +76,31 @@ object StartMessage : InteractiveMessage() {
     }
 
     override suspend fun onInteract(interaction: ButtonInteraction, componentId: String) {
-        val state = STATE as GameState.Start
+        val state = interaction.gameState as GameState.Start
 
         when (componentId) {
             START -> {
-                // TODO
-                interaction.respondEphemeral { content = "nuh uh" }
+                interaction.gameState = GameState.Discussion(state.players.associateWith { Role.ARTHUR_SERVANT }, listOf(), Snowflake(0))
+//                interaction.gameState = GameState.Discussion(state) // TODO
+                interaction.respondPublic {
+                    using(interaction.gameState!!.message, interaction)
+                }
             }
             CANCEL -> {
                 STATE = null
-                interaction.updateBoth(null)
+                interaction.updateAll()
                 interaction.deferPublicMessageUpdate()
             }
             JOIN -> {
                 if (state.players.add(interaction.user.id)) {
-                    interaction.updateContent(state)
+                    interaction.updateContent()
                     interaction.deferPublicMessageUpdate()
                 } else
                     interaction.respondEphemeral { content = "Cannot join: You already joined this game" }
             }
             LEAVE -> {
                 if (state.players.remove(interaction.user.id)) {
-                    interaction.updateContent(state)
+                    interaction.updateContent()
                     interaction.deferPublicMessageUpdate()
                 } else
                     interaction.respondEphemeral { content = "Cannot leave: You are not in this game" }
@@ -145,7 +112,7 @@ object StartMessage : InteractiveMessage() {
                 } else {
                     state.optionalRoles.add(role)
                 }
-                interaction.updateComponents(state)
+                interaction.updateComponents()
                 interaction.deferPublicMessageUpdate()
             }
         }
