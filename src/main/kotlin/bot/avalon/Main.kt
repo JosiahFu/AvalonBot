@@ -2,12 +2,11 @@
 
 package bot.avalon
 
-import bot.avalon.kord.message.InteractiveMessage
-import bot.avalon.kord.StartMessage
 import bot.avalon.kord.commands
+import bot.avalon.kord.message.InteractiveMessage
 import dev.kord.core.Kord
-import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.ComponentInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import io.github.cdimascio.dotenv.Dotenv
@@ -16,9 +15,6 @@ lateinit var kord: Kord
 
 suspend fun main() {
     val dotenv = Dotenv.load()
-
-    // TODO find better way to register all message types
-    StartMessage
 
     Kord(dotenv["BOT_TOKEN"]).apply {
         for (command in commands) {
@@ -29,7 +25,7 @@ suspend fun main() {
             commands.find { it.name == interaction.invokedCommandName }!!.run { execute() }
         }
 
-        on<ButtonInteractionCreateEvent> {
+        on<ComponentInteractionCreateEvent> {
             InteractiveMessage.of(interaction.componentId).onInteract(interaction, interaction.componentId)
         }
 

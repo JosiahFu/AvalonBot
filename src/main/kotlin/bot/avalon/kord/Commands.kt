@@ -2,7 +2,7 @@ package bot.avalon.kord
 
 import bot.avalon.data.GameState
 import bot.avalon.data.gameState
-import bot.avalon.kord.message.InteractiveMessage.Companion.using
+import bot.avalon.kord.message.respondTo
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
@@ -26,9 +26,10 @@ val commands = listOf(
         "Start a game of Avalon",
     ) {
         println("Starting new game")
-        interaction.gameState = GameState.Start()
-        interaction.respondPublic {
-            using(StartMessage, interaction)
+
+        with (GameState.Start()) {
+            interaction.gameState = this
+            respondTo(interaction)
         }
     }
 )

@@ -1,18 +1,14 @@
 package bot.avalon.kord
 
-import bot.avalon.data.GameState
-import bot.avalon.data.Role
-import bot.avalon.data.STATE
-import bot.avalon.data.gameState
+import bot.avalon.data.*
 import bot.avalon.kord
 import bot.avalon.kord.message.InteractiveMessage
+import bot.avalon.kord.message.respondTo
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.interaction.ActionInteraction
-import dev.kord.core.entity.interaction.ButtonInteraction
+import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 import kotlin.enums.enumEntries
@@ -37,28 +33,31 @@ object StartMessage : InteractiveMessage() {
         """.trimIndent()
     }
 
-    override suspend fun MessageBuilder.components(interaction: ActionInteraction) {
+    override suspend fun MessageBuilder.components(interaction: ActionInteraction, disable: Boolean) {
         val state = interaction.gameState
-        val valid = state is GameState.Start
+        val valid = !disable && state is GameState.Start
 
-        if (valid) actionRow {
+        actionRow {
             for (role in enumEntries<Role>()) if (role.isOptional) {
                 val enabled = state is GameState.Start && role in state.optionalRoles
 
                 interactionButton(if (enabled) ButtonStyle.Success else ButtonStyle.Secondary, role.name) {
                     label = role.toString()
                     emoji = DiscordPartialEmoji(name = if (enabled) "\u2705" else "\u274C")
+                    if (!valid) disabled = true
                 }
             }
         }
 
-        if (valid) actionRow {
+        actionRow {
             interactionButton(ButtonStyle.Primary, JOIN) {
                 label = "Join"
+                if (!valid) disabled = true
             }
 
             interactionButton(ButtonStyle.Danger, LEAVE) {
                 label = "Leave"
+                if (!valid) disabled = true
             }
         }
 
@@ -75,15 +74,16 @@ object StartMessage : InteractiveMessage() {
         }
     }
 
-    override suspend fun onInteract(interaction: ButtonInteraction, componentId: String) {
+    override suspend fun onInteract(interaction: ComponentInteraction, componentId: String) {
         val state = interaction.gameState as GameState.Start
 
         when (componentId) {
             START -> {
-                interaction.gameState = GameState.Discussion(state.players.associateWith { Role.ARTHUR_SERVANT }, listOf(), Snowflake(0))
-//                interaction.gameState = GameState.Discussion(state) // TODO
-                interaction.respondPublic {
-                    using(interaction.gameState!!.message, interaction)
+                interaction.disableComponents()
+                with (GameState.Discussion(state.players.associateWith { Role.ARTHUR_SERVANT }, listOf(Quest(2)), state.players.random())) {
+//                with (GameState.Discussion(state)) { // TODO
+                    interaction.gameState = this
+                    respondTo(interaction)
                 }
             }
             CANCEL -> {
@@ -94,18 +94,16 @@ object StartMessage : InteractiveMessage() {
             JOIN -> {
                 if (state.players.add(interaction.user.id)) {
                     interaction.updateContent()
-                    interaction.deferPublicMessageUpdate()
                 } else
                     interaction.respondEphemeral { content = "Cannot join: You already joined this game" }
             }
             LEAVE -> {
                 if (state.players.remove(interaction.user.id)) {
                     interaction.updateContent()
-                    interaction.deferPublicMessageUpdate()
                 } else
                     interaction.respondEphemeral { content = "Cannot leave: You are not in this game" }
             }
-            else -> {
+            else -> { // is a role toggle
                 val role = Role.valueOf(interaction.componentId)
                 if (role in state.optionalRoles) {
                     state.optionalRoles.remove(role)
@@ -113,7 +111,6 @@ object StartMessage : InteractiveMessage() {
                     state.optionalRoles.add(role)
                 }
                 interaction.updateComponents()
-                interaction.deferPublicMessageUpdate()
             }
         }
     }

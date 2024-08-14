@@ -14,11 +14,14 @@ var ActionInteraction.gameState: GameState? by ::STATE
 
 @Serializable
 sealed interface GameState {
+    var message: MessageId?
+
     @Serializable
     @SerialName("start")
     data class Start(
         val players: MutableSet<UserId> = mutableSetOf(),
-        val optionalRoles: MutableSet<Role> = mutableSetOf()
+        val optionalRoles: MutableSet<Role> = mutableSetOf(),
+        override var message: MessageId? = null,
     ) : GameState
 
     @Serializable
@@ -41,6 +44,9 @@ sealed interface GameState {
             get() = players.keys.toList().let {
                 it[(it.indexOf(leader) + 1).mod(it.size)]
             }
+
+        val currentQuest: QuestData
+            get() = quests.first { !it.isComplete }
     }
 
     @Serializable
@@ -50,6 +56,8 @@ sealed interface GameState {
         override val quests: List<QuestData>,
         override var leader: UserId,
         var fails: Int = 0,
+        val currentTeam: MutableList<UserId> = mutableListOf(),
+        override var message: MessageId? = null,
     ) : PlayState {
         constructor(prevState: Start): this(assignRoles(prevState.players, prevState.optionalRoles), getQuests(prevState.players.size), prevState.players.random())
         constructor(prevState: PlayState): this(prevState.players, prevState.quests, prevState.nextLeader)
@@ -69,13 +77,14 @@ sealed interface GameState {
         override val quests: List<QuestData>,
         override var leader: UserId,
         var fails: Int,
-        val proposedTeam: Collection<UserId>,
+        val proposedTeam: Set<UserId>,
         val votes: MutableMap<UserId, Boolean> = mutableMapOf(),
+        override var message: MessageId? = null,
     ) : PlayState {
         constructor(
             prevState: Discussion,
             proposedTeam: Collection<UserId>,
-        ): this(prevState.players, prevState.quests, prevState.leader, prevState.fails, proposedTeam)
+        ): this(prevState.players, prevState.quests, prevState.leader, prevState.fails, proposedTeam.toSet())
     }
 
     @Serializable
@@ -84,8 +93,9 @@ sealed interface GameState {
         override val players: Map<UserId, Role>,
         override val quests: List<QuestData>,
         override var leader: UserId,
-        val team: Collection<UserId>,
+        val team: Set<UserId>,
         val votes: MutableMap<UserId, Boolean> = mutableMapOf(),
+        override var message: MessageId? = null,
     ) : PlayState {
         constructor(prevState: Proposal): this(prevState.players, prevState.quests, prevState.leader, prevState.proposedTeam)
     }
@@ -94,13 +104,14 @@ sealed interface GameState {
     @SerialName("assassin")
     data class Assassin(
         val players: Map<UserId, Role>,
+        override var message: MessageId? = null,
     ) : GameState {
         constructor(prevState: PlayState): this(prevState.players)
 
         fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.EVIL else Team.GOOD
     }
 
-    val message
+    val messageType
         get() = when(this) {
             is Start -> StartMessage
             is Discussion -> DiscussionMessage

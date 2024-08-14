@@ -7,7 +7,10 @@ data class Quest(
     val size: Int,
     val requiredFails: Int = 1,
     var winner: Team? = null,
-)
+) {
+    val isComplete: Boolean
+        get() = winner != null
+}
 
 private fun checkFourthQuest(index: Int, size: Int) = Quest(size, requiredFails = if (index == 3) 2 else 1)
 
