@@ -17,8 +17,12 @@ sealed interface GameState {
         override var message: MessageId? = null,
     ) : GameState
 
+    // TODO change this name
     sealed interface RoledState : GameState {
         val players: Map<UserId, Role>
+
+        fun getVisibleTo(role: Role): Set<UserId> = players.filterValues { it in role.visible }.keys
+        fun getVisibleTo(player: UserId): Set<UserId> = getVisibleTo(players[player]!!)
     }
 
     @Serializable
@@ -32,10 +36,6 @@ sealed interface GameState {
 
         val allSeen: Boolean
             get() = players.keys.all { it in seenRoles }
-
-        fun getVisibleTo(role: Role): Set<UserId> = players.filterValues { it in role.visible }.keys
-        fun getVisibleTo(player: UserId): Set<UserId> = getVisibleTo(players[player]!!)
-
     }
 
     @Serializable

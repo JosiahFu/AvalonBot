@@ -13,9 +13,9 @@ import dev.kord.rest.builder.message.actionRow
 import kotlin.enums.enumEntries
 
 object JoinMessage : GameMessageType<GameState.Join>() {
-    private const val START = "start"
+    private const val START = "start_game"
     private const val JOIN = "join"
-    private const val CANCEL = "cancel"
+    private const val CANCEL = "cancel_game"
     private const val LEAVE = "leave"
 
     override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + enumEntries<Role>().map(Role::name)
