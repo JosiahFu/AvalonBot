@@ -1,7 +1,7 @@
 package bot.avalon.kord
 
 import bot.avalon.data.GameState
-import bot.avalon.data.gameState
+import bot.avalon.data.STATE
 import bot.avalon.kord.message.respondTo
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -28,7 +28,7 @@ val commands = listOf(
         println("Starting new game")
 
         with (GameState.Start()) {
-            interaction.gameState = this
+            STATE = this
             respondTo(interaction)
         }
     }

@@ -3,15 +3,13 @@
 package bot.avalon
 
 import bot.avalon.kord.commands
-import bot.avalon.kord.message.InteractiveMessage
+import bot.avalon.kord.message.GameMessageType
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.ComponentInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import io.github.cdimascio.dotenv.Dotenv
-
-lateinit var kord: Kord
 
 suspend fun main() {
     val dotenv = Dotenv.load()
@@ -26,10 +24,8 @@ suspend fun main() {
         }
 
         on<ComponentInteractionCreateEvent> {
-            InteractiveMessage.of(interaction.componentId).onInteract(interaction, interaction.componentId)
+            GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
         }
-
-        kord = this
 
         login {
             println("Logged in!")

@@ -1,16 +1,10 @@
 package bot.avalon.data
 
-import bot.avalon.kord.StartMessage
-import bot.avalon.kord.message.DiscussionMessage
-import dev.kord.core.entity.interaction.ActionInteraction
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import bot.avalon.data.Quest as QuestData
 
 var STATE: GameState? = null
-
-// TODO
-var ActionInteraction.gameState: GameState? by ::STATE
 
 @Serializable
 sealed interface GameState {
@@ -56,7 +50,6 @@ sealed interface GameState {
         override val quests: List<QuestData>,
         override var leader: UserId,
         var fails: Int = 0,
-        val currentTeam: MutableList<UserId> = mutableListOf(),
         override var message: MessageId? = null,
     ) : PlayState {
         constructor(prevState: Start): this(assignRoles(prevState.players, prevState.optionalRoles), getQuests(prevState.players.size), prevState.players.random())
@@ -111,11 +104,5 @@ sealed interface GameState {
         fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.EVIL else Team.GOOD
     }
 
-    val messageType
-        get() = when(this) {
-            is Start -> StartMessage
-            is Discussion -> DiscussionMessage
-            else -> TODO()
-        }
 }
 
