@@ -17,6 +17,12 @@ abstract class StatefulMessageType<T: U, U> {
     protected open suspend fun MessageBuilder.embeds(state: T, kord: Kord) {}
     protected abstract suspend fun MessageBuilder.components(state: T, kord: Kord, disable: Boolean = false)
 
+    protected suspend fun MessageBuilder.configureWith(state: T, kord: Kord) {
+        content = content(state, kord)
+        embeds(state, kord)
+        components(state, kord)
+    }
+
     protected suspend fun ComponentInteraction.updateContent(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
@@ -48,19 +54,19 @@ abstract class StatefulMessageType<T: U, U> {
     protected suspend fun ComponentInteraction.updateAll(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
-            using(this@StatefulMessageType, state as T, kord)
+            configureWith(state as T, kord)
         }
     }
 
     suspend fun respondTo(interaction: ActionInteraction) {
         interaction.respondPublic {
-            using(this@StatefulMessageType, interaction.state as T, interaction.kord)
+            configureWith(interaction.state as T, interaction.kord)
         }
     }
 
     suspend fun sendInChannel(interaction: ActionInteraction): Message {
         return interaction.channel.createMessage {
-            using(this@StatefulMessageType, interaction.state as T, interaction.kord)
+            configureWith(interaction.state as T, interaction.kord)
         }
     }
 
@@ -71,15 +77,5 @@ abstract class StatefulMessageType<T: U, U> {
     }
 
     abstract val ids: Collection<String>
-
-    companion object {
-        suspend fun <T> MessageBuilder.using(message: StatefulMessageType<T, *>, state: T, kord: Kord) {
-            with(message) {
-                content = content(state, kord)
-                embeds(state, kord)
-                components(state, kord)
-            }
-        }
-    }
 }
 
