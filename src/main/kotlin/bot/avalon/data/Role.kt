@@ -1,20 +1,24 @@
 package bot.avalon.data
 
 import bot.avalon.lib.removeRandom
-import java.util.*
 import kotlin.enums.enumEntries
 
 enum class Team { GOOD, EVIL }
 
-enum class Role(val team: Team, val isOptional: Boolean = false) {
-    ARTHUR_SERVANT(Team.GOOD),
-    MERLIN(Team.GOOD),
-    PERCIVAL(Team.GOOD, isOptional = true),
-    MORDRED_MINION(Team.EVIL),
-    MORDRED(Team.EVIL, isOptional = true),
-    ASSASSIN(Team.EVIL),
-    OBERON(Team.EVIL, isOptional = true),
-    MORGANA(Team.EVIL, isOptional = true);
+enum class Role(
+    val formatName: String,
+    val team: Team,
+    val visibleDescription: String = "",
+    val isOptional: Boolean = false,
+) {
+    ARTHUR_SERVANT("Servant of Arthur", Team.GOOD),
+    MERLIN("Merlin", Team.GOOD, "Minions of Mordred (or Oberon, but not Mordred)"),
+    PERCIVAL("Percival", Team.GOOD, "Merlin (or Morgana)", isOptional = true),
+    MORDRED_MINION("Minion of Mordred", Team.EVIL, "Minions of Mordred (but not Oberon)"),
+    MORDRED("Mordred", Team.EVIL, "Minions of Mordred (but not Oberon)", isOptional = true),
+    ASSASSIN("Assassin", Team.EVIL, "Minions of Mordred (but not Oberon)"),
+    OBERON("Oberon", Team.EVIL, isOptional = true),
+    MORGANA("Morgana", Team.EVIL, "Minions of Mordred (but not Oberon)", isOptional = true);
 
     lateinit var visible: Set<Role>
         private set
@@ -22,9 +26,7 @@ enum class Role(val team: Team, val isOptional: Boolean = false) {
     val isDefault: Boolean
         get() = this == defaultGood || this == defaultEvil
 
-    override fun toString(): String {
-        return name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-    }
+    override fun toString(): String = formatName
 
     companion object {
         init {
@@ -52,6 +54,7 @@ data class TeamSizes(
 )
 
 fun getTeamSizes(players: Int): TeamSizes = when (players) {
+    2 -> TeamSizes(good = 1, evil = 1) // TODO this is temporary for testing
     5 -> TeamSizes(good = 3, evil = 2)
     6 -> TeamSizes(good = 4, evil = 2)
     7 -> TeamSizes(good = 4, evil = 3)

@@ -2,7 +2,6 @@ package bot.avalon.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import bot.avalon.data.Quest as QuestData
 
 var STATE: GameState? = null
 
@@ -11,21 +10,38 @@ sealed interface GameState {
     var message: MessageId?
 
     @Serializable
-    @SerialName("start")
-    data class Start(
+    @SerialName("join")
+    data class Join(
         val players: MutableSet<UserId> = mutableSetOf(),
         val optionalRoles: MutableSet<Role> = mutableSetOf(),
         override var message: MessageId? = null,
     ) : GameState
 
-    @Serializable
-    sealed interface PlayState : GameState {
+    sealed interface RoledState : GameState {
         val players: Map<UserId, Role>
-        val quests: List<QuestData>
-        var leader: UserId
+    }
+
+    @Serializable
+    @SerialName("start")
+    data class Start(
+        override val players: Map<UserId, Role>,
+        override var message: MessageId? = null,
+        val seenRoles: MutableSet<UserId> = mutableSetOf()
+    ): RoledState {
+        constructor(prevState: Join) : this(assignRoles(prevState.players, prevState.optionalRoles))
+
+        val allSeen: Boolean
+            get() = players.keys.all { it in seenRoles }
 
         fun getVisibleTo(role: Role): Set<UserId> = players.filterValues { it in role.visible }.keys
         fun getVisibleTo(player: UserId): Set<UserId> = getVisibleTo(players[player]!!)
+
+    }
+
+    @Serializable
+    sealed interface PlayState : RoledState {
+        val quests: List<Quest>
+        var leader: UserId
 
         val winner: Team?
             get() = when {
@@ -39,7 +55,7 @@ sealed interface GameState {
                 it[(it.indexOf(leader) + 1).mod(it.size)]
             }
 
-        val currentQuest: QuestData
+        val currentQuest: Quest
             get() = quests.first { !it.isComplete }
     }
 
@@ -47,12 +63,12 @@ sealed interface GameState {
     @SerialName("discussion")
     data class Discussion(
         override val players: Map<UserId, Role>,
-        override val quests: List<QuestData>,
+        override val quests: List<Quest>,
         override var leader: UserId,
         var fails: Int = 0,
         override var message: MessageId? = null,
     ) : PlayState {
-        constructor(prevState: Start): this(assignRoles(prevState.players, prevState.optionalRoles), getQuests(prevState.players.size), prevState.players.random())
+        constructor(prevState: Start): this(prevState.players, getQuests(prevState.players.size), prevState.players.keys.random())
         constructor(prevState: PlayState): this(prevState.players, prevState.quests, prevState.nextLeader)
 
         override val winner: Team?
@@ -67,7 +83,7 @@ sealed interface GameState {
     @SerialName("proposal")
     data class Proposal(
         override val players: Map<UserId, Role>,
-        override val quests: List<QuestData>,
+        override val quests: List<Quest>,
         override var leader: UserId,
         var fails: Int,
         val proposedTeam: Set<UserId>,
@@ -78,13 +94,16 @@ sealed interface GameState {
             prevState: Discussion,
             proposedTeam: Collection<UserId>,
         ): this(prevState.players, prevState.quests, prevState.leader, prevState.fails, proposedTeam.toSet())
+
+        val allVotesIn: Boolean
+            get() = players.keys.all { it in votes }
     }
 
     @Serializable
     @SerialName("quest")
-    data class Quest(
+    data class Questing(
         override val players: Map<UserId, Role>,
-        override val quests: List<QuestData>,
+        override val quests: List<Quest>,
         override var leader: UserId,
         val team: Set<UserId>,
         val votes: MutableMap<UserId, Boolean> = mutableMapOf(),
@@ -96,9 +115,9 @@ sealed interface GameState {
     @Serializable
     @SerialName("assassin")
     data class Assassin(
-        val players: Map<UserId, Role>,
+        override val players: Map<UserId, Role>,
         override var message: MessageId? = null,
-    ) : GameState {
+    ) : RoledState {
         constructor(prevState: PlayState): this(prevState.players)
 
         fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.EVIL else Team.GOOD

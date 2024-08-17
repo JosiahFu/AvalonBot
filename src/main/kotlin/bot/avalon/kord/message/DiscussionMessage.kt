@@ -8,7 +8,7 @@ import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 
 object DiscussionMessage : GameMessageType<GameState.Discussion>() {
-    val USER_SELECT = "user_select"
+    private const val USER_SELECT = "user_select"
 
     override suspend fun content(state: GameState.Discussion, kord: Kord): String {
         return """
@@ -35,14 +35,13 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-//        val state = interaction.gameState as GameState.Discussion
-
-        // TODO validate (everyone is in the game, the user actually did that)
-        // Maybe don't respond if wrong user?
-
-//        interaction.disableComponents()
-        interaction.deferPublicMessageUpdate()
-        (interaction as SelectMenuInteraction).resolvedObjects?.users
+        if (interaction.user.id != state.leader) return // Let interaction fail
+        // TODO validate that all selected users are in the game
+        interaction.disableComponents()
+        with (GameState.Proposal(state, (interaction as SelectMenuInteraction).resolvedObjects?.users!!.keys)) {
+            setState(this)
+            respondTo(interaction)
+        }
     }
 
     override val ids: Collection<String> = listOf(USER_SELECT)

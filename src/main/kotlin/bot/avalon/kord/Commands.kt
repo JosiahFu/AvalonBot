@@ -27,7 +27,7 @@ val commands = listOf(
     ) {
         println("Starting new game")
 
-        with (GameState.Start()) {
+        with (GameState.Join()) {
             STATE = this
             respondTo(interaction)
         }

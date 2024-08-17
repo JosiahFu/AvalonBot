@@ -1,8 +1,10 @@
 package bot.avalon.kord.message
 
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.interaction.ActionInteraction
 import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
@@ -11,7 +13,7 @@ import dev.kord.rest.builder.message.MessageBuilder
 abstract class StatefulMessageType<T: U, U> {
     abstract var ActionInteraction.state: U
 
-    protected open suspend fun content(state: T, kord: Kord): String = ""
+    protected abstract suspend fun content(state: T, kord: Kord): String
     protected open suspend fun MessageBuilder.embeds(state: T, kord: Kord) {}
     protected abstract suspend fun MessageBuilder.components(state: T, kord: Kord, disable: Boolean = false)
 
@@ -52,6 +54,12 @@ abstract class StatefulMessageType<T: U, U> {
 
     suspend fun respondTo(interaction: ActionInteraction) {
         interaction.respondPublic {
+            using(this@StatefulMessageType, interaction.state as T, interaction.kord)
+        }
+    }
+
+    suspend fun sendInChannel(interaction: ActionInteraction): Message {
+        return interaction.channel.createMessage {
             using(this@StatefulMessageType, interaction.state as T, interaction.kord)
         }
     }
