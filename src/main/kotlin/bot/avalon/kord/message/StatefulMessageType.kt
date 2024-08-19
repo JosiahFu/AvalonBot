@@ -72,7 +72,7 @@ abstract class StatefulMessageType<T: U, U> {
 
     protected open suspend fun onInteract(interaction: ComponentInteraction, state: T, componentId: String, setState: (U) -> Unit ) {}
 
-    suspend fun interact(interaction: ComponentInteraction, componentId: String) {
+    open suspend fun interact(interaction: ComponentInteraction, componentId: String) {
         this.onInteract(interaction, interaction.state as T, componentId) { interaction.state = it }
     }
 

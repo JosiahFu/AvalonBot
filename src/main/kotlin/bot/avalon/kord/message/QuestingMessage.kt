@@ -7,10 +7,13 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object QuestingMessage : GameMessageType<GameState.Questing>() {
     private const val SUCCESS = "quest_success"
@@ -58,10 +61,12 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
         when (componentId) {
             SUCCESS -> {
-                interaction.respondEphemeral {
-                    content = "Your vote: ${Emojis.TROPHY} SUCCESS"
-                }
                 state.votes[interaction.user.id] = true
+                interaction.kord.launch {
+                    interaction.respondEphemeral {
+                        content = "Your vote: ${Emojis.TROPHY} SUCCESS"
+                    }
+                }
             }
             FAIL -> {
                 if (state.players[interaction.user.id]!!.team != Team.EVIL) {
@@ -71,39 +76,57 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
                     return
                 }
 
-                interaction.respondEphemeral {
-                    content = "Your vote: ${Emojis.KNIFE} FAIL"
-                }
                 state.votes[interaction.user.id] = false
+                interaction.kord.launch {
+                    interaction.respondEphemeral {
+                        content = "Your vote: ${Emojis.KNIFE} FAIL"
+                    }
+                }
             }
         }
 
-        interaction.updateContent(false)
+        interaction.kord.launch {
+            interaction.updateContent(false)
+        }
 
-        if (state.allVotesIn) {
-            interaction.disableComponents()
+        if (!state.allVotesIn) return
 
-            interaction.channel.createMessage {
+        interaction.disableComponents()
+
+        val resultMessage = interaction.channel.createMessage {
+            content = """
+                ### Quest Results
+                # ${List(state.votes.size) { Emojis.HOLE }.joinToString(" ")}
+            """.trimIndent()
+        }
+
+        val votes = state.votes.values.shuffled()
+
+        for (revealIndex in votes.indices) {
+            delay(2000)
+            resultMessage.edit {
                 content = """
-                    ### Quest Results
-                    ${state.votes.values.shuffled().joinToString("  ") { if (it) Emojis.TROPHY else Emojis.KNIFE }}
-                """.trimIndent()
+                ### Quest Results
+                # ${votes.mapIndexed { index, vote -> if (index < revealIndex) Emojis.HOLE else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
+            """.trimIndent()
             }
+        }
 
-            state.currentQuest.winner = state.questResult
+        state.currentQuest.winner = state.questResult
 
-            when (state.winner) {
-                Team.GOOD -> GameState.Assassin(state)
-                null -> GameState.Discussion(state)
-                Team.EVIL -> {
-                    interaction.channel.sendWinMessage(Team.EVIL, state.players)
-                    setState(null)
-                    return
-                }
-            }.apply {
-                setState(this)
-                sendInChannel(interaction)
+        delay(2000)
+
+        when (state.winner) {
+            Team.GOOD -> GameState.Assassin(state)
+            null -> GameState.Discussion(state)
+            Team.EVIL -> {
+                interaction.channel.sendWinMessage(Team.EVIL, state.players)
+                setState(null)
+                return
             }
+        }.apply {
+            setState(this)
+            sendInChannel(interaction)
         }
     }
 

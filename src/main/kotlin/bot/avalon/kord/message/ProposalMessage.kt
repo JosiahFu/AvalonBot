@@ -10,6 +10,8 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object ProposalMessage : GameMessageType<GameState.Proposal>() {
     private const val APPROVE = "approve_quest"
@@ -51,34 +53,41 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         when (componentId) {
             APPROVE -> {
                 state.votes[interaction.user.id] = true
-                interaction.respondEphemeral {
-                    content = "Your vote: ${Emojis.THUMBS_UP} APPROVE"
+                interaction.kord.launch {
+                    interaction.respondEphemeral {
+                        content = "Your vote: ${Emojis.THUMBS_UP} APPROVE"
+                    }
                 }
             }
             DENY -> {
                 state.votes[interaction.user.id] = false
-                interaction.respondEphemeral {
-                    content = "Your vote: ${Emojis.THUMBS_DOWN} DENY"
+                interaction.kord.launch {
+                    interaction.respondEphemeral {
+                        content = "Your vote: ${Emojis.THUMBS_DOWN} DENY"
+                    }
                 }
             }
         }
 
         interaction.updateContent(false)
 
-        if (state.allVotesIn) {
-            interaction.disableComponents()
-            interaction.channel.createMessage {
-                content =
-                    "### Vote Results\n" +
-                    state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${interaction.kord.getUser(player)!!.mention}" }.joinToString("\n")
-            }
+        if (!state.allVotesIn) return
 
-            with (
-                if (state.votePassed) GameState.Questing(state) else GameState.Discussion.fromFailed(state)
-            ) {
-                setState(this)
-                sendInChannel(interaction)
-            }
+        interaction.disableComponents()
+
+        interaction.channel.createMessage {
+            content =
+                "### Vote Results\n" +
+                        state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${interaction.kord.getUser(player)!!.mention}" }.joinToString("\n")
+        }
+
+        delay(2000)
+
+        with (
+            if (state.votePassed) GameState.Questing(state) else GameState.Discussion.fromFailed(state)
+        ) {
+            setState(this)
+            sendInChannel(interaction)
         }
     }
 

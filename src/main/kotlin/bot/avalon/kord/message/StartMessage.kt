@@ -3,13 +3,15 @@ package bot.avalon.kord.message
 import bot.avalon.data.GameState
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.Kord
+import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.entity.interaction.ActionInteraction
 import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 
 object StartMessage : GameMessageType<GameState.Start>() {
     private const val START_VIEW_ROLE = "start_view_role"
-    private const val VIEW_ROLE = "view_role"
+    const val VIEW_ROLE = "view_role"
 
     override suspend fun content(state: GameState.Start, kord: Kord) = """
         Game has began
@@ -53,5 +55,31 @@ object StartMessage : GameMessageType<GameState.Start>() {
         }
     }
 
+    override suspend fun interact(interaction: ComponentInteraction, componentId: String) {
+        if (componentId == VIEW_ROLE) {
+            showRole(interaction)
+            return
+        }
+        super.interact(interaction, componentId)
+    }
+
     override val ids: Collection<String> = listOf(START_VIEW_ROLE, VIEW_ROLE)
+
+    suspend fun showRole(interaction: ActionInteraction) {
+        val state = interaction.state as? GameState.RoledState
+
+        if (state == null) {
+            interaction.respondEphemeral {
+                content = "There is no game running"
+            }
+            return
+        }
+
+        if (interaction.user.id !in state.players) {
+            interaction.respondNotInGame()
+            return
+        }
+
+        interaction.showRole(state)
+    }
 }

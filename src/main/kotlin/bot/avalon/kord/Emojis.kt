@@ -1,6 +1,7 @@
 package bot.avalon.kord
 
 object Emojis {
+    /** First symbol of most surrogate pairs */
     private const val S = "\uD83D"
 
     const val CHECK = "\u2705"
@@ -15,6 +16,7 @@ object Emojis {
     const val TROPHY = "\uD83C\uDFC6"
     const val KNIFE = "$S\uDDE1"
 
+    /** Combining enclosing keycap */
     private const val N = "\uFE0F\u20E3"
 
     val NUMBER = listOf("0$N", "1$N", "2$N", "3$N", "4$N", "5$N")
