@@ -15,7 +15,7 @@ data class Quest(
 private fun checkFourthQuest(index: Int, size: Int) = Quest(size, requiredFails = if (index == 3) 2 else 1)
 
 fun getQuests(players: Int): List<Quest> = when(players) {
-    1 -> listOf(1, 1, 1).map(::Quest)
+    1 -> listOf(1, 1, 1, 1, 1).map(::Quest)
     2, 3, 4 -> listOf(2, 3, 3).map(::Quest) // TODO Remove this, it's for testing
     5 -> listOf(2, 3, 2, 3, 3).map(::Quest)
     6 -> listOf(2, 3, 4, 3, 4).map(::Quest)

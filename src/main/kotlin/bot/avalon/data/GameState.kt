@@ -122,7 +122,7 @@ sealed interface GameState {
             get() = team.all { it in votes }
 
         val questResult: Team
-            get() = if (false in votes.values) Team.EVIL else Team.GOOD
+            get() = if (votes.values.count { !it } > currentQuest.requiredFails) Team.EVIL else Team.GOOD
     }
 
     @Serializable
@@ -132,6 +132,9 @@ sealed interface GameState {
         override var message: MessageId? = null,
     ) : RoledState {
         constructor(prevState: PlayState): this(prevState.players)
+
+        val assassin: UserId
+            get() = players.firstNotNullOf { if (it.value == Role.ASSASSIN) it.key else null }
 
         fun getWinner(guess: UserId) = if (players[guess] == Role.MERLIN) Team.EVIL else Team.GOOD
     }

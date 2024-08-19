@@ -11,10 +11,11 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 suspend fun MessageChannelBehavior.sendWinMessage(team: Team, players: Map<UserId, Role>) {
     createMessage {
         content = """
-            ## ${team.name} Team Wins!
-            
-            ### Roles
-        """.trimIndent() + "\n" + players.map { (user, role) -> "${kord.getUser(user)!!.mention}: $role" }.joinToString("\n")
+            |## ${team.name} Team Wins!
+            |
+            |### Roles
+            |${players.map { (user, role) -> "${kord.getUser(user)!!.mention}: $role" }.joinToString("\n")}
+        """.trimMargin()
     }
 }
 

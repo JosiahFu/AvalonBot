@@ -16,6 +16,8 @@ object Emojis {
     const val TROPHY = "\uD83C\uDFC6"
     const val KNIFE = "$S\uDDE1"
 
+    const val QUESTION = "\u2754"
+
     /** Combining enclosing keycap */
     private const val N = "\uFE0F\u20E3"
 

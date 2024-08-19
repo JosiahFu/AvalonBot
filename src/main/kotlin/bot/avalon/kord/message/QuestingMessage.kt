@@ -96,7 +96,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
         val resultMessage = interaction.channel.createMessage {
             content = """
                 ### Quest Results
-                # ${List(state.votes.size) { Emojis.HOLE }.joinToString(" ")}
+                # ${List(state.votes.size) { Emojis.QUESTION }.joinToString(" ")}
             """.trimIndent()
         }
 
@@ -107,7 +107,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
             resultMessage.edit {
                 content = """
                 ### Quest Results
-                # ${votes.mapIndexed { index, vote -> if (index < revealIndex) Emojis.HOLE else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
+                # ${votes.mapIndexed { index, vote -> if (index < revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
             """.trimIndent()
             }
         }
