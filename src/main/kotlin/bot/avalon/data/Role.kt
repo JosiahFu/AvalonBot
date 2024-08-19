@@ -54,6 +54,8 @@ data class TeamSizes(
 
 fun getTeamSizes(players: Int): TeamSizes = when (players) {
     2 -> TeamSizes(good = 1, evil = 1) // TODO this is temporary for testing
+    3 -> TeamSizes(good = 2, evil = 1) // TODO this is temporary for testing
+    4 -> TeamSizes(good = 3, evil = 1) // TODO this is temporary for testing
     5 -> TeamSizes(good = 3, evil = 2)
     6 -> TeamSizes(good = 4, evil = 2)
     7 -> TeamSizes(good = 4, evil = 3)
@@ -64,13 +66,17 @@ fun getTeamSizes(players: Int): TeamSizes = when (players) {
 }
 
 fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
-    val roles = enumEntries<Role>()
+    // TODO Remove this it's for testing
+    if (players == 1) {
+        return listOf(Role.ASSASSIN)
+    }
+
     val (good, evil) = getTeamSizes(players)
-    val specialRoles = roles.filter { !it.isDefault && (!it.isOptional || it in enabled) }
+    val specialRoles = enumEntries<Role>().filter { !it.isDefault && (!it.isOptional || it in enabled) }
 
     return specialRoles +
-        List(good - specialRoles.count { it.team == Team.GOOD }) { Role.defaultGood } +
-        List(evil - specialRoles.count { it.team == Team.EVIL }) { Role.defaultEvil }
+            List(good - specialRoles.count { it.team == Team.GOOD }) { Role.defaultGood } +
+            List(evil - specialRoles.count { it.team == Team.EVIL }) { Role.defaultEvil }
 }
 
 fun assignRoles(players: Collection<UserId>, optionalsEnabled: Collection<Role>): Map<UserId, Role> {

@@ -28,6 +28,7 @@ val messageTypes: List<GameMessageType<out GameState>> = listOf(
     StartMessage,
     DiscussionMessage,
     ProposalMessage,
+    QuestingMessage,
 )
 
 val <T: GameState> T.messageType : GameMessageType<out GameState>
@@ -36,5 +37,6 @@ val <T: GameState> T.messageType : GameMessageType<out GameState>
         is GameState.Start -> StartMessage
         is GameState.Discussion -> DiscussionMessage
         is GameState.Proposal -> ProposalMessage
+        is GameState.Questing -> QuestingMessage
         else -> TODO()
     }

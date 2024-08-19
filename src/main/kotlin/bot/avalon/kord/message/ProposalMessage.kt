@@ -15,9 +15,11 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
     private const val APPROVE = "approve_quest"
     private const val DENY = "deny_quest"
 
-    override suspend fun content(state: GameState.Proposal, kord: Kord): String =
-        "### Proposed quest:\n" +
-        state.proposedTeam.map { kord.getUser(it)!!.mention }.joinToString("\n")
+    override suspend fun content(state: GameState.Proposal, kord: Kord) = """
+        |### Proposed quest:
+        |${state.proposedTeam.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+        |${state.votes.size}/${state.players.size} votes in
+        """.trimMargin()
 
     override suspend fun MessageBuilder.components(state: GameState.Proposal, kord: Kord, disable: Boolean) {
         actionRow {
@@ -41,6 +43,11 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
+        if (interaction.user.id !in state.players) {
+            interaction.respondNotInGame()
+            return
+        }
+
         when (componentId) {
             APPROVE -> {
                 state.votes[interaction.user.id] = true
@@ -55,6 +62,8 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
                 }
             }
         }
+
+        interaction.updateContent(false)
 
         if (state.allVotesIn) {
             interaction.disableComponents()

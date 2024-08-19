@@ -13,18 +13,15 @@ import dev.kord.rest.builder.message.actionRow
 object DiscussionMessage : GameMessageType<GameState.Discussion>() {
     private const val USER_SELECT = "user_select"
 
-    override suspend fun content(state: GameState.Discussion, kord: Kord): String {
-        return """
-            ## Discussion
-            
-            ${state.quests.map { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.KNIFE) else Emojis.NUMBER[it.requiredFails]}}
-            
-            Requires ${state.currentQuest.size} questers
-            ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
-            ${kord.getUser(state.leader)?.mention} is quest leader
-        """.trimIndent()
-
-    }
+    override suspend fun content(state: GameState.Discussion, kord: Kord): String = """
+        ## Discussion
+        
+        # ${state.quests.joinToString(" ") { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.KNIFE) else Emojis.NUMBER[it.size] }}
+        
+        Requires ${state.currentQuest.size} questers
+        ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
+        ${kord.getUser(state.leader)?.mention} is quest leader
+    """.trimIndent()
 
     override suspend fun MessageBuilder.components(state: GameState.Discussion, kord: Kord, disable: Boolean) {
         actionRow {
@@ -42,7 +39,17 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        if (interaction.user.id != state.leader) return // Let interaction fail
+        if (interaction.user.id !in state.players) {
+            interaction.respondNotInGame()
+            return
+        }
+
+        if (interaction.user.id != state.leader) {
+            interaction.respondEphemeral {
+                content = "You are not the leader of this quest"
+            }
+            return
+        }
 
         val selectedUsers = (interaction as SelectMenuInteraction).resolvedObjects?.users!!.keys
 

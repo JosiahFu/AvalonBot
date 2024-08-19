@@ -25,7 +25,12 @@ suspend fun main() {
         }
 
         on<ComponentInteractionCreateEvent> {
-            GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
+            try {
+                GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
+            } catch (e: NullPointerException) {
+                println("Could not find message for ${interaction.componentId}")
+                throw e
+            }
         }
 
         on<ReadyEvent> {

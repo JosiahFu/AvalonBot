@@ -12,7 +12,7 @@ object Emojis {
     const val DIAMOND = "$S\uDC8E"
     const val HOLE = "$S\uDD73"
 
-    const val TROPHY = "$S\uDFC6"
+    const val TROPHY = "\uD83C\uDFC6"
     const val KNIFE = "$S\uDDE1"
 
     private const val N = "\uFE0F\u20E3"

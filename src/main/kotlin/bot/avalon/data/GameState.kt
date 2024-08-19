@@ -15,7 +15,10 @@ sealed interface GameState {
         val players: MutableSet<UserId> = mutableSetOf(),
         val optionalRoles: MutableSet<Role> = mutableSetOf(),
         override var message: MessageId? = null,
-    ) : GameState
+    ) : GameState {
+        val canStart: Boolean
+            get() = players.size in 5..10 || players.size in 1..5 // TODO Remove this it's for testing
+    }
 
     // TODO change this name
     sealed interface RoledState : GameState {
@@ -99,9 +102,8 @@ sealed interface GameState {
             get() = players.keys.all { it in votes }
 
         val votePassed: Boolean
-            get() = votes.values.count { it } > (players.size + 1) / 2
-            // +1 so that evens require >50 instead of >=50
-            // e.g. 8 players -> 9 / 2 -> 4 so at least 5 votes are required
+            get() = 2 * votes.values.count { it } > players.size
+            // The calculation works
     }
 
     @Serializable
@@ -117,7 +119,7 @@ sealed interface GameState {
         constructor(prevState: Proposal): this(prevState.players, prevState.quests, prevState.leader, prevState.proposedTeam)
 
         val allVotesIn: Boolean
-            get() = players.keys.all { it in votes }
+            get() = team.all { it in votes }
 
         val questResult: Team
             get() = if (false in votes.values) Team.EVIL else Team.GOOD

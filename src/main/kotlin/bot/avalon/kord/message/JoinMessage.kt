@@ -21,12 +21,11 @@ object JoinMessage : GameMessageType<GameState.Join>() {
 
     override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + enumEntries<Role>().map(Role::name)
 
-    override suspend fun content(state: GameState.Join, kord: Kord): String {
-        return """
-            # Avalon
-            Players joined:${if (state.players.isEmpty()) " None" else ""}
-        """.trimIndent() + state.players.map { "\n${kord.getUser(it)?.mention}" }.joinToString("") + "\n"
-    }
+    override suspend fun content(state: GameState.Join, kord: Kord) = """
+        |# New Game
+        |Players joined:${if (state.players.isEmpty()) " None" else ""}
+        |${state.players.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+    """.trimMargin()
 
     override suspend fun MessageBuilder.components(state: GameState.Join, kord: Kord, disable: Boolean) {
 
@@ -57,8 +56,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
         actionRow {
             interactionButton(ButtonStyle.Primary, START) {
                 label = "Start"
-                                                                                // TODO testing case
-                if (disable || (state.players.size !in 5..10 && state.players.size != 2)) disabled = true
+                if (disable || !state.canStart) disabled = true
             }
 
             interactionButton(ButtonStyle.Danger, CANCEL) {

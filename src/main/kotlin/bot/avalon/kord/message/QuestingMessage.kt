@@ -16,20 +16,24 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
     private const val SUCCESS = "quest_success"
     private const val FAIL = "quest_fail"
 
-    override suspend fun content(state: GameState.Questing, kord: Kord): String {
-        return "### Quest\n" + state.team.map { kord.getUser(it)!!.mention }.joinToString("\n")
-    }
+    override suspend fun content(state: GameState.Questing, kord: Kord) = """
+        |## Quest
+        |${state.team.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+        |${state.votes.size}/${state.team.size} votes in
+        """.trimMargin()
 
     override suspend fun MessageBuilder.components(state: GameState.Questing, kord: Kord, disable: Boolean) {
         actionRow {
             interactionButton(ButtonStyle.Success, SUCCESS) {
                 label = "Success"
                 emoji = DiscordPartialEmoji(name = Emojis.TROPHY)
+                if (disable) disabled = true
             }
 
             interactionButton(ButtonStyle.Danger, FAIL) {
                 label = "Fail"
                 emoji = DiscordPartialEmoji(name = Emojis.KNIFE)
+                if (disable) disabled = true
             }
         }
     }
@@ -40,9 +44,23 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
+        if (interaction.user.id !in state.players) {
+            interaction.respondNotInGame()
+            return
+        }
+
+        if (interaction.user.id !in state.team) {
+            interaction.respondEphemeral {
+                content = "You are not on this quest's team"
+            }
+            return
+        }
+
         when (componentId) {
             SUCCESS -> {
-                interaction.deferPublicMessageUpdate()
+                interaction.respondEphemeral {
+                    content = "Your vote: ${Emojis.TROPHY} SUCCESS"
+                }
                 state.votes[interaction.user.id] = true
             }
             FAIL -> {
@@ -53,12 +71,18 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
                     return
                 }
 
-                interaction.deferPublicMessageUpdate()
+                interaction.respondEphemeral {
+                    content = "Your vote: ${Emojis.KNIFE} FAIL"
+                }
                 state.votes[interaction.user.id] = false
             }
         }
 
+        interaction.updateContent(false)
+
         if (state.allVotesIn) {
+            interaction.disableComponents()
+
             interaction.channel.createMessage {
                 content = """
                     ### Quest Results
@@ -68,7 +92,15 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
             state.currentQuest.winner = state.questResult
 
-            with (GameState.Discussion(state)) {
+            when (state.winner) {
+                Team.GOOD -> GameState.Assassin(state)
+                null -> GameState.Discussion(state)
+                Team.EVIL -> {
+                    interaction.channel.sendWinMessage(Team.EVIL, state.players)
+                    setState(null)
+                    return
+                }
+            }.apply {
                 setState(this)
                 sendInChannel(interaction)
             }

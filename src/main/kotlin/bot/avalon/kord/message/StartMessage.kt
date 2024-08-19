@@ -14,6 +14,7 @@ object StartMessage : GameMessageType<GameState.Start>() {
     override suspend fun content(state: GameState.Start, kord: Kord) = """
         Game has began
         *Everyone must view their role*
+        ${state.seenRoles.size}/${state.players.size} complete
     """.trimIndent()
 
     override suspend fun MessageBuilder.components(state: GameState.Start, kord: Kord, disable: Boolean) {
@@ -30,11 +31,18 @@ object StartMessage : GameMessageType<GameState.Start>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
+        if (interaction.user.id !in state.players) {
+            interaction.respondNotInGame()
+            return
+        }
+
         interaction.showRole(state)
 
         if (componentId == VIEW_ROLE) return
 
         state.seenRoles.add(interaction.user.id)
+
+        interaction.updateContent(false)
 
         if (state.allSeen) {
             interaction.disableComponents()
