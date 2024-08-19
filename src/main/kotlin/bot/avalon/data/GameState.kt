@@ -97,6 +97,11 @@ sealed interface GameState {
 
         val allVotesIn: Boolean
             get() = players.keys.all { it in votes }
+
+        val votePassed: Boolean
+            get() = votes.values.count { it } > (players.size + 1) / 2
+            // +1 so that evens require >50 instead of >=50
+            // e.g. 8 players -> 9 / 2 -> 4 so at least 5 votes are required
     }
 
     @Serializable
@@ -110,6 +115,12 @@ sealed interface GameState {
         override var message: MessageId? = null,
     ) : PlayState {
         constructor(prevState: Proposal): this(prevState.players, prevState.quests, prevState.leader, prevState.proposedTeam)
+
+        val allVotesIn: Boolean
+            get() = players.keys.all { it in votes }
+
+        val questResult: Team
+            get() = if (false in votes.values) Team.EVIL else Team.GOOD
     }
 
     @Serializable

@@ -2,6 +2,7 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Role
+import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
@@ -35,7 +36,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
 
                 interactionButton(if (enabled) ButtonStyle.Success else ButtonStyle.Secondary, role.name) {
                     label = role.toString()
-                    emoji = DiscordPartialEmoji(name = if (enabled) "\u2705" else "\u274C")
+                    emoji = DiscordPartialEmoji(name = if (enabled) Emojis.CHECK else Emojis.X)
                     if (disable) disabled = true
                 }
             }

@@ -11,7 +11,7 @@ suspend fun ActionInteraction.showRole(state: GameState.RoledState) {
     respondEphemeral {
         content = """
             You are $role
-            ${if (visible.isNotEmpty()) "${visible.map { kord.getUser(it)!!.mention }.joinToString(", ")} are ${role.visibleDescription}" else "'"}
+            ${if (visible.isNotEmpty()) "${visible.map { kord.getUser(it)!!.mention }.joinToString(", ")} are ${role.visible.joinToString(", ")}" else "'"}
         """.trimIndent()
     }
 }

@@ -5,6 +5,7 @@ package bot.avalon
 import bot.avalon.kord.commands
 import bot.avalon.kord.message.GameMessageType
 import dev.kord.core.Kord
+import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.ComponentInteractionCreateEvent
 import dev.kord.core.on
@@ -14,7 +15,7 @@ import io.github.cdimascio.dotenv.Dotenv
 suspend fun main() {
     val dotenv = Dotenv.load()
 
-    Kord(dotenv["BOT_TOKEN"]).apply {
+    with (Kord(dotenv["BOT_TOKEN"])) {
         for (command in commands) {
             createGlobalChatInputCommand(command.name, command.description, command.builder)
         }
@@ -27,8 +28,11 @@ suspend fun main() {
             GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
         }
 
-        login {
+        on<ReadyEvent> {
             println("Logged in!")
+        }
+
+        login {
             intents += Intent.GuildMessages + Intent.Guilds
         }
     }

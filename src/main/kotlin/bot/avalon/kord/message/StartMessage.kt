@@ -9,7 +9,7 @@ import dev.kord.rest.builder.message.actionRow
 
 object StartMessage : GameMessageType<GameState.Start>() {
     private const val START_VIEW_ROLE = "start_view_role"
-    private const val VIEW_ROLE = "start_view_role"
+    private const val VIEW_ROLE = "view_role"
 
     override suspend fun content(state: GameState.Start, kord: Kord) = """
         Game has began
@@ -45,5 +45,5 @@ object StartMessage : GameMessageType<GameState.Start>() {
         }
     }
 
-    override val ids: Collection<String> = listOf(VIEW_ROLE)
+    override val ids: Collection<String> = listOf(START_VIEW_ROLE, VIEW_ROLE)
 }

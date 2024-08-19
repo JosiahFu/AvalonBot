@@ -1,10 +1,12 @@
 package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
+import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.ComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
@@ -12,9 +14,6 @@ import dev.kord.rest.builder.message.actionRow
 object ProposalMessage : GameMessageType<GameState.Proposal>() {
     private const val APPROVE = "approve_quest"
     private const val DENY = "deny_quest"
-
-    private const val THUMBS_UP_EMOJI = "\uD83D\uDC4D"
-    private const val THUMBS_DOWN_EMOJI = "\uD83D\uDC4E"
 
     override suspend fun content(state: GameState.Proposal, kord: Kord): String =
         "### Proposed quest:\n" +
@@ -24,13 +23,13 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         actionRow {
             interactionButton(ButtonStyle.Success, APPROVE) {
                 label = "Approve"
-                emoji = DiscordPartialEmoji(name = THUMBS_UP_EMOJI)
+                emoji = DiscordPartialEmoji(name = Emojis.THUMBS_UP)
                 if (disable) disabled = true
             }
 
             interactionButton(ButtonStyle.Danger, DENY) {
                 label = "Deny"
-                emoji = DiscordPartialEmoji(name = THUMBS_DOWN_EMOJI)
+                emoji = DiscordPartialEmoji(name = Emojis.THUMBS_DOWN)
                 if (disable) disabled = true
             }
         }
@@ -42,13 +41,18 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        interaction.deferPublicMessageUpdate()
         when (componentId) {
             APPROVE -> {
                 state.votes[interaction.user.id] = true
+                interaction.respondEphemeral {
+                    content = "Your vote: ${Emojis.THUMBS_UP} APPROVE"
+                }
             }
             DENY -> {
                 state.votes[interaction.user.id] = false
+                interaction.respondEphemeral {
+                    content = "Your vote: ${Emojis.THUMBS_DOWN} DENY"
+                }
             }
         }
 
@@ -57,7 +61,14 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
             interaction.channel.createMessage {
                 content =
                     "### Vote Results\n" +
-                    state.votes.map { (player, vote) -> "${interaction.kord.getUser(player)!!.mention}: ${if (vote) THUMBS_UP_EMOJI else THUMBS_DOWN_EMOJI}" }.joinToString("\n")
+                    state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${interaction.kord.getUser(player)!!.mention}" }.joinToString("\n")
+            }
+
+            with (
+                if (state.votePassed) GameState.Questing(state) else GameState.Discussion.fromFailed(state)
+            ) {
+                setState(this)
+                sendInChannel(interaction)
             }
         }
     }

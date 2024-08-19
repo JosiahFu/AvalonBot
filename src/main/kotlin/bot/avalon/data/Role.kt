@@ -8,17 +8,16 @@ enum class Team { GOOD, EVIL }
 enum class Role(
     val formatName: String,
     val team: Team,
-    val visibleDescription: String = "",
     val isOptional: Boolean = false,
 ) {
     ARTHUR_SERVANT("Servant of Arthur", Team.GOOD),
-    MERLIN("Merlin", Team.GOOD, "Minions of Mordred (or Oberon, but not Mordred)"),
-    PERCIVAL("Percival", Team.GOOD, "Merlin (or Morgana)", isOptional = true),
-    MORDRED_MINION("Minion of Mordred", Team.EVIL, "Minions of Mordred (but not Oberon)"),
-    MORDRED("Mordred", Team.EVIL, "Minions of Mordred (but not Oberon)", isOptional = true),
-    ASSASSIN("Assassin", Team.EVIL, "Minions of Mordred (but not Oberon)"),
+    MERLIN("Merlin", Team.GOOD),
+    PERCIVAL("Percival", Team.GOOD, isOptional = true),
+    MORDRED_MINION("Minion of Mordred", Team.EVIL),
+    MORDRED("Mordred", Team.EVIL, isOptional = true),
+    ASSASSIN("Assassin", Team.EVIL),
     OBERON("Oberon", Team.EVIL, isOptional = true),
-    MORGANA("Morgana", Team.EVIL, "Minions of Mordred (but not Oberon)", isOptional = true);
+    MORGANA("Morgana", Team.EVIL, isOptional = true);
 
     lateinit var visible: Set<Role>
         private set
@@ -79,3 +78,8 @@ fun assignRoles(players: Collection<UserId>, optionalsEnabled: Collection<Role>)
 
     return players.associateWith { remainingRoles.removeRandom() }
 }
+
+// TODO
+//fun visibleMessage(role: Role, state: Collection<Role>) = when(role) {
+//    Role.MERLIN -> "The minions of mordred"
+//}

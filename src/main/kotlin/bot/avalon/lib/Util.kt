@@ -10,9 +10,9 @@ fun <T> MutableList<T>.removeRandom(random: Random): T {
     return element
 }
 
-inline fun <reified R: T, T : Any> Iterable<T>.firstOf(): R {
+inline fun <reified T> Iterable<*>.firstOf(): T {
     for (e in this) {
-        if (e is R) {
+        if (e is T) {
             return e
         }
     }
