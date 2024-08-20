@@ -44,7 +44,7 @@ sealed interface GameState {
     @Serializable
     sealed interface PlayState : RoledState {
         val quests: List<Quest>
-        var leader: UserId
+        val leader: UserId
 
         val winner: Team?
             get() = when {
@@ -68,17 +68,14 @@ sealed interface GameState {
         override val players: Map<UserId, Role>,
         override val quests: List<Quest>,
         override var leader: UserId,
-        var fails: Int = 0,
+        val attempt: Int = 1,
         override var message: MessageId? = null,
     ) : PlayState {
         constructor(prevState: Start): this(prevState.players, getQuests(prevState.players.size), prevState.players.keys.random())
         constructor(prevState: PlayState): this(prevState.players, prevState.quests, prevState.nextLeader)
 
-        override val winner: Team?
-            get() = if (fails > 5) Team.EVIL else super.winner
-
         companion object {
-            fun fromFailed(prevState: Proposal) = Discussion(prevState.players, prevState.quests, prevState.nextLeader, prevState.fails + 1)
+            fun fromFailed(prevState: Proposal) = Discussion(prevState.players, prevState.quests, prevState.nextLeader, prevState.attempt + 1)
         }
     }
 
@@ -88,7 +85,7 @@ sealed interface GameState {
         override val players: Map<UserId, Role>,
         override val quests: List<Quest>,
         override var leader: UserId,
-        var fails: Int,
+        val attempt: Int,
         val proposedTeam: Set<UserId>,
         val votes: MutableMap<UserId, Boolean> = mutableMapOf(),
         override var message: MessageId? = null,
@@ -96,7 +93,7 @@ sealed interface GameState {
         constructor(
             prevState: Discussion,
             proposedTeam: Collection<UserId>,
-        ): this(prevState.players, prevState.quests, prevState.leader, prevState.fails, proposedTeam.toSet())
+        ): this(prevState.players, prevState.quests, prevState.leader, prevState.attempt, proposedTeam.toSet())
 
         val allVotesIn: Boolean
             get() = players.keys.all { it in votes }
@@ -104,6 +101,10 @@ sealed interface GameState {
         val votePassed: Boolean
             get() = 2 * votes.values.count { it } > players.size
             // The calculation works
+
+        val outOfAttempts: Boolean
+            get() = attempt >= 5
+
     }
 
     @Serializable

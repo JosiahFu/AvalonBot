@@ -1,6 +1,7 @@
 package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
+import bot.avalon.data.Team
 import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
@@ -82,6 +83,12 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         }
 
         delay(2000)
+
+        if (state.outOfAttempts) {
+            interaction.channel.sendWinMessage(Team.EVIL, state.players)
+            setState(null)
+            return
+        }
 
         with(
             if (state.votePassed) GameState.Questing(state) else GameState.Discussion.fromFailed(state)

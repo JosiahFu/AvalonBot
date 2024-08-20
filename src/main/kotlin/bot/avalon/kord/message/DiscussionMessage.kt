@@ -20,6 +20,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         
         Requires ${state.currentQuest.size} questers
         ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
+        Attempt ${state.attempt}
         ${kord.getUser(state.leader)?.mention} is quest leader
     """.trimIndent()
 
