@@ -20,7 +20,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         
         Requires ${state.currentQuest.size} questers
         ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
-        Attempt ${state.attempt}
+        Attempt ${state.attempt}/5
         ${kord.getUser(state.leader)?.mention} is quest leader
     """.trimIndent()
 
@@ -61,10 +61,10 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
             return
         }
 
-        interaction.disableComponents()
+        interaction.disableComponents(defer = true)
         with (GameState.Proposal(state, selectedUsers)) {
             setState(this)
-            respondTo(interaction)
+            sendInChannel(interaction)
         }
     }
 

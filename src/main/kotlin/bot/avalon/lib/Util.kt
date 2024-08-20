@@ -18,3 +18,28 @@ inline fun <reified T> Iterable<*>.firstOf(): T {
     }
     throw NoSuchElementException("Collection is empty.")
 }
+
+class ObservableMap<K, V>(private val base: MutableMap<K, V>, private val onchange: () -> Unit): MutableMap<K, V> by base {
+    override fun put(key: K, value: V): V? {
+        return base.put(key, value).also { onchange() }
+    }
+
+    override fun putAll(from: Map<out K, V>) {
+        return base.putAll(from).also { onchange() }
+    }
+
+    override fun remove(key: K): V? {
+        return base.remove(key).also { onchange() }
+    }
+
+    override fun remove(key: K, value: V): Boolean {
+        return base.remove(key, value).also { onchange() }
+    }
+
+    override fun clear() {
+        base.clear()
+        onchange()
+    }
+
+
+}

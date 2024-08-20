@@ -75,10 +75,10 @@ object JoinMessage : GameMessageType<GameState.Join>() {
 
         when (componentId) {
             START -> {
-                interaction.disableComponents()
+                interaction.disableComponents(defer = true)
                 with (GameState.Start(state)) {
                     interaction.state = this
-                    respondTo(interaction)
+                    sendInChannel(interaction)
                 }
             }
             CANCEL -> {

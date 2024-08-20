@@ -44,11 +44,15 @@ abstract class StatefulMessageType<T: U, U> {
         }
     }
 
-    protected open suspend fun ComponentInteraction.disableComponents(defer: Boolean = false) {
-        if (defer) deferPublicMessageUpdate()
-        this.message.edit {
+    protected suspend fun Message.disableComponents(state: U) {
+        edit {
             components(state as T, kord, disable = true)
         }
+    }
+
+    protected open suspend fun ComponentInteraction.disableComponents(defer: Boolean = false) {
+        if (defer) deferPublicMessageUpdate()
+        this.message.disableComponents(state)
     }
 
     protected suspend fun ComponentInteraction.updateAll(defer: Boolean = true) {
@@ -77,5 +81,11 @@ abstract class StatefulMessageType<T: U, U> {
     }
 
     abstract val ids: Collection<String>
+
+    companion object {
+        suspend fun <T> StatefulMessageType<*, T>.disableComponents(message: Message, state: T) {
+            message.disableComponents(state)
+        }
+    }
 }
 

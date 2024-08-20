@@ -1,13 +1,20 @@
 package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
-import bot.avalon.data.STATE
+import bot.avalon.data.STATES
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.interaction.ActionInteraction
 import dev.kord.core.entity.interaction.ComponentInteraction
 
 abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?>() {
-    override var ActionInteraction.state by ::STATE // TODO
+    override var ActionInteraction.state: GameState?
+        get() = STATES[this.channelId]
+        set(value) {
+            if (value == null)
+                STATES.remove(this.channelId)
+            else
+                STATES[this.channelId] = value
+        }
 
     override suspend fun ComponentInteraction.disableComponents(defer: Boolean) {
         // Can't use super here because it's a member extension function

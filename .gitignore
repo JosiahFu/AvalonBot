@@ -4,6 +4,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .env
+state.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

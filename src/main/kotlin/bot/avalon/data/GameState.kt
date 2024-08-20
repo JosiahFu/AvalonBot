@@ -1,9 +1,21 @@
 package bot.avalon.data
 
+import bot.avalon.lib.ObservableMap
+import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.io.FileNotFoundException
 
-var STATE: GameState? = null
+typealias GameStates = MutableMap<Snowflake, GameState>
+
+var STATES: GameStates = ObservableMap(try {
+    loadGameStates()
+} catch (e: FileNotFoundException) {
+    mutableMapOf()
+}) {
+    saveGameStates()
+}
+
 
 @Serializable
 sealed interface GameState {
