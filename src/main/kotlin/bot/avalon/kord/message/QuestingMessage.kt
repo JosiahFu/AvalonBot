@@ -89,7 +89,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
             interaction.updateContent(false)
         }
 
-        if (!state.allVotesIn) return
+        if (!state.allVotesIn || state.message == null) return
 
         interaction.disableComponents()
 
@@ -107,7 +107,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
             resultMessage.edit {
                 content = """
                 ### Quest Results
-                # ${votes.mapIndexed { index, vote -> if (index < revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
+                # ${votes.mapIndexed { index, vote -> if (index > revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
             """.trimIndent()
             }
         }

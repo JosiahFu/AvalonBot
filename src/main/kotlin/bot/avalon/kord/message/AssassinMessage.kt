@@ -83,6 +83,8 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
             """.trimIndent()
         }
 
+        delay(2000)
+
         interaction.channel.sendWinMessage(winner, state.players)
 
         setState(null)

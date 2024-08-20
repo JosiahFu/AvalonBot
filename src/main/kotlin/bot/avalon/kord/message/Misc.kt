@@ -24,3 +24,10 @@ suspend fun ActionInteractionBehavior.respondNotInGame() {
         content = "You are not part of this game"
     }
 }
+
+fun List<String>.joinFormatted(default: String? = null) = when(this.size) {
+    0 -> default ?: throw IllegalArgumentException("Cannot format join collection of 0 arguments")
+    1 -> this[0]
+    2 -> "${this[0]} and ${this[1]}"
+    else -> "${this.subList(0, this.size - 1).joinToString(", ")} and ${this[this.size - 1]}"
+}

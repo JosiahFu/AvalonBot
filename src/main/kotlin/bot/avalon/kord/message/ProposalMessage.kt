@@ -71,7 +71,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
 
         interaction.updateContent(false)
 
-        if (!state.allVotesIn) return
+        if (!state.allVotesIn || state.message == null) return
 
         interaction.disableComponents()
 
@@ -83,7 +83,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
 
         delay(2000)
 
-        with (
+        with(
             if (state.votePassed) GameState.Questing(state) else GameState.Discussion.fromFailed(state)
         ) {
             setState(this)

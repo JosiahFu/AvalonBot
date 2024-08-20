@@ -2,10 +2,23 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.STATE
+import dev.kord.core.behavior.edit
 import dev.kord.core.entity.interaction.ActionInteraction
+import dev.kord.core.entity.interaction.ComponentInteraction
 
 abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?>() {
     override var ActionInteraction.state by ::STATE // TODO
+
+    override suspend fun ComponentInteraction.disableComponents(defer: Boolean) {
+        // Can't use super here because it's a member extension function
+        // just gotta copy-paste the code...
+        this.state!!.message = null
+        if (defer) deferPublicMessageUpdate()
+        this.message.edit {
+            @Suppress("UNCHECKED_CAST")
+            components(state as T, kord, disable = true)
+        }
+    }
 
     companion object {
         fun of(componentId: String) = messageTypes.find { componentId in it.ids }!!

@@ -44,7 +44,7 @@ abstract class StatefulMessageType<T: U, U> {
         }
     }
 
-    protected suspend fun ComponentInteraction.disableComponents(defer: Boolean = false) {
+    protected open suspend fun ComponentInteraction.disableComponents(defer: Boolean = false) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
             components(state as T, kord, disable = true)

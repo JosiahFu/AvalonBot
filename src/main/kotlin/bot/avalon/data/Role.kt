@@ -6,7 +6,7 @@ import kotlin.enums.enumEntries
 enum class Team { GOOD, EVIL }
 
 enum class Role(
-    val formatName: String,
+    private val formatName: String,
     val team: Team,
     val isOptional: Boolean = false,
 ) {
@@ -28,10 +28,10 @@ enum class Role(
     override fun toString(): String = formatName
 
     companion object {
-        init {
-            val evilTeam = enumEntries<Role>().filter { it.team == Team.EVIL }.toSet()
-            val mordredMinions = evilTeam - OBERON
+        val evilTeam = enumEntries<Role>().filter { it.team == Team.EVIL }.toSet()
+        val mordredMinions = evilTeam - OBERON
 
+        init {
             ARTHUR_SERVANT.visible = setOf()
             MERLIN.visible = evilTeam - MORDRED
             PERCIVAL.visible = setOf(MERLIN, MORGANA)

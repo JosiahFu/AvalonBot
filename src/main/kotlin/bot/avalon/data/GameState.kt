@@ -25,7 +25,7 @@ sealed interface GameState {
         val players: Map<UserId, Role>
 
         fun getVisibleTo(role: Role): Set<UserId> = players.filterValues { it in role.visible }.keys
-        fun getVisibleTo(player: UserId): Set<UserId> = getVisibleTo(players[player]!!)
+        fun getVisibleTo(player: UserId): List<UserId> = getVisibleTo(players[player]!!).filter { it != player }
     }
 
     @Serializable
@@ -122,7 +122,7 @@ sealed interface GameState {
             get() = team.all { it in votes }
 
         val questResult: Team
-            get() = if (votes.values.count { !it } > currentQuest.requiredFails) Team.EVIL else Team.GOOD
+            get() = if (votes.values.count { !it } >= currentQuest.requiredFails) Team.EVIL else Team.GOOD
     }
 
     @Serializable
