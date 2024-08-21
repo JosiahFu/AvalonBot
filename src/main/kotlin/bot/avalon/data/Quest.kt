@@ -16,7 +16,8 @@ private fun checkFourthQuest(index: Int, size: Int) = Quest(size, requiredFails 
 
 fun getQuests(players: Int): List<Quest> = when(players) {
     1 -> listOf(1, 1, 1, 1, 1).map(::Quest)
-    2, 3, 4 -> listOf(2, 2, 2, 2, 2).map(::Quest) // TODO Remove this, it's for testing
+    2, 3 -> listOf(2, 2, 2, 2, 2).map(::Quest) // TODO Remove this, it's for testing
+    4 -> listOf(2, 3, 2, 3, 3).map(::Quest)
     5 -> listOf(2, 3, 2, 3, 3).map(::Quest)
     6 -> listOf(2, 3, 4, 3, 4).map(::Quest)
     7 -> listOf(2, 3, 3, 4, 4).mapIndexed(::checkFourthQuest)

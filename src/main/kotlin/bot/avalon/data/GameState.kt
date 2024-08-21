@@ -2,18 +2,24 @@ package bot.avalon.data
 
 import bot.avalon.lib.ObservableMap
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.io.FileNotFoundException
 
 typealias GameStates = MutableMap<Snowflake, GameState>
 
-var STATES: GameStates = ObservableMap(try {
-    loadGameStates()
-} catch (e: FileNotFoundException) {
-    mutableMapOf()
-}) {
-    saveGameStates()
+lateinit var STATES: GameStates
+
+fun loadGameState(kord: Kord) {
+    KordSerializer.kord = kord
+    STATES = ObservableMap(try {
+        loadGameStates()
+    } catch (e: FileNotFoundException) {
+        mutableMapOf()
+    }) {
+        saveGameStates()
+    }
 }
 
 
@@ -37,7 +43,7 @@ sealed interface GameState {
         val players: Map<UserId, Role>
 
         fun getVisibleTo(role: Role): Set<UserId> = players.filterValues { it in role.visible }.keys
-        fun getVisibleTo(player: UserId): List<UserId> = getVisibleTo(players[player]!!).filter { it != player }
+        fun getVisibleTo(player: UserId): List<UserId> = getVisibleTo(players[player.asBehavior()]!!).filter { it != player }
     }
 
     @Serializable

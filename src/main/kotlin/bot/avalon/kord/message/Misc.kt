@@ -14,7 +14,7 @@ suspend fun MessageChannelBehavior.sendWinMessage(team: Team, players: Map<UserI
             |## ${team.name} Team Wins!
             |
             |### Roles
-            |${players.map { (user, role) -> "${kord.getUser(user)!!.mention}: $role" }.joinToString("\n")}
+            |${players.map { (user, role) -> "${user.mention}: $role" }.joinToString("\n")}
         """.trimMargin()
     }
 }

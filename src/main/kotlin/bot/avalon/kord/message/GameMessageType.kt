@@ -2,6 +2,7 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.STATES
+import bot.avalon.data.saveGameStates
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.interaction.ActionInteraction
 import dev.kord.core.entity.interaction.ComponentInteraction
@@ -35,12 +36,14 @@ abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?
 suspend fun GameState.respondTo(interaction: ActionInteraction) {
     messageType.respondTo(interaction)
     this.message = interaction.getOriginalInteractionResponse().id
+    saveGameStates()
 }
 
 suspend fun GameState.sendInChannel(interaction: ActionInteraction) {
     messageType.sendInChannel(interaction).also {
         this.message = it.id
     }
+    saveGameStates()
 }
 
 val messageTypes: List<GameMessageType<out GameState>> = listOf(

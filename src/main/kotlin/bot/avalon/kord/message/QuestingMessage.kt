@@ -2,6 +2,8 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
+import bot.avalon.data.asBehavior
+import bot.avalon.data.contains
 import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
@@ -21,7 +23,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
     override suspend fun content(state: GameState.Questing, kord: Kord) = """
         |## Quest
-        |${state.team.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+        |${state.team.joinToString("\n") { it.mention }}
         |${state.votes.size}/${state.team.size} votes in
         """.trimMargin()
 
@@ -47,12 +49,12 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        if (interaction.user.id !in state.players) {
+        if (interaction.user !in state.players) {
             interaction.respondNotInGame()
             return
         }
 
-        if (interaction.user.id !in state.team) {
+        if (interaction.user !in state.team) {
             interaction.respondEphemeral {
                 content = "You are not on this quest's team"
             }
@@ -61,7 +63,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
         when (componentId) {
             SUCCESS -> {
-                state.votes[interaction.user.id] = true
+                state.votes[interaction.user.asBehavior()] = true
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.TROPHY} SUCCESS"
@@ -69,14 +71,14 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
                 }
             }
             FAIL -> {
-                if (state.players[interaction.user.id]!!.team != Team.EVIL) {
+                if (state.players[interaction.user.asBehavior()]!!.team != Team.EVIL) {
                     interaction.respondEphemeral {
                         content = "Only the evil team may fail quests"
                     }
                     return
                 }
 
-                state.votes[interaction.user.id] = false
+                state.votes[interaction.user.asBehavior()] = false
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.KNIFE} FAIL"

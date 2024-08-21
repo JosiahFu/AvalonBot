@@ -2,6 +2,7 @@ package bot.avalon.kord
 
 import bot.avalon.data.GameState
 import bot.avalon.data.STATES
+import bot.avalon.data.getMessageBehavior
 import bot.avalon.kord.message.StatefulMessageType.Companion.disableComponents
 import bot.avalon.kord.message.messageType
 import bot.avalon.kord.message.sendInChannel
@@ -53,7 +54,7 @@ val commands = listOf(
     ) {
         val state = STATES[interaction.channelId]
         if (state == null) {
-            interaction.respondEphemeral {
+            interaction.respondPublic {
                 content = "This channel does not currently have a game running"
             }
             return@Command
@@ -63,7 +64,7 @@ val commands = listOf(
 
         interaction.kord.launch {
             state.messageType.disableComponents(
-                interaction.channel.getMessage(message),
+                interaction.channel.getMessageBehavior(message),
                 state,
             )
         }
@@ -91,7 +92,7 @@ val commands = listOf(
 
         interaction.kord.launch {
             state.messageType.disableComponents(
-                interaction.channel.getMessage(message),
+                interaction.channel.getMessageBehavior(message),
                 state,
             )
         }

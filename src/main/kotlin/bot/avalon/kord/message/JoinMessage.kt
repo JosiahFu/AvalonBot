@@ -2,6 +2,7 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Role
+import bot.avalon.data.asBehavior
 import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
@@ -24,7 +25,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
     override suspend fun content(state: GameState.Join, kord: Kord) = """
         |# New Game
         |Players joined:${if (state.players.isEmpty()) " None" else ""}
-        |${state.players.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+        |${state.players.map { it.mention }.joinToString("\n")}
     """.trimMargin()
 
     override suspend fun MessageBuilder.components(state: GameState.Join, kord: Kord, disable: Boolean) {
@@ -86,7 +87,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
                 setState(null)
             }
             JOIN -> {
-                if (state.players.add(interaction.user.id)) {
+                if (state.players.add(interaction.user.asBehavior())) {
                     interaction.deferPublicMessageUpdate()
                     interaction.message.edit {
                         content = content(state, interaction.kord)
@@ -96,7 +97,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
                     interaction.respondEphemeral { content = "Cannot join: You already joined this game" }
             }
             LEAVE -> {
-                if (state.players.remove(interaction.user.id)) {
+                if (state.players.remove(interaction.user.asBehavior())) {
                     interaction.updateContent()
                 } else
                     interaction.respondEphemeral { content = "Cannot leave: You are not in this game" }

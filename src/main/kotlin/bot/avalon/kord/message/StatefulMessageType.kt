@@ -1,6 +1,7 @@
 package bot.avalon.kord.message
 
 import dev.kord.core.Kord
+import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondPublic
@@ -44,7 +45,7 @@ abstract class StatefulMessageType<T: U, U> {
         }
     }
 
-    protected suspend fun Message.disableComponents(state: U) {
+    protected suspend fun MessageBehavior.disableComponents(state: U) {
         edit {
             components(state as T, kord, disable = true)
         }
@@ -83,7 +84,7 @@ abstract class StatefulMessageType<T: U, U> {
     abstract val ids: Collection<String>
 
     companion object {
-        suspend fun <T> StatefulMessageType<*, T>.disableComponents(message: Message, state: T) {
+        suspend fun <T> StatefulMessageType<*, T>.disableComponents(message: MessageBehavior, state: T) {
             message.disableComponents(state)
         }
     }

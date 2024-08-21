@@ -2,6 +2,7 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
+import bot.avalon.data.contains // This is important to ensure Member can be checked for presence in a map
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
@@ -19,9 +20,9 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         |## GOOD succeeds
         |
         |### EVIL Roles
-        |${state.players.filterValues { it.team == Team.EVIL }.map { (user, role) -> "${kord.getUser(user)!!.mention}: $role" }.joinToString("\n")}
+        |${state.players.filterValues { it.team == Team.EVIL }.map { (user, role) -> "${user.mention}: $role" }.joinToString("\n")}
         |### Assassin
-        |${kord.getUser(state.assassin)!!.mention}
+        |${state.assassin.mention}
     """.trimMargin()
 
     override suspend fun MessageBuilder.components(state: GameState.Assassin, kord: Kord, disable: Boolean) {
@@ -40,19 +41,19 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        if (interaction.user.id !in state.players) {
+        if (interaction.user !in state.players) {
             interaction.respondNotInGame()
             return
         }
 
-        if (interaction.user.id != state.assassin) {
+        if (interaction.user != state.assassin) {
             interaction.respondEphemeral {
                 content = "You are not the assassin"
             }
             return
         }
 
-        val (target, targetUser) = (interaction as SelectMenuInteraction).resolvedObjects!!.users!!.iterator().next()
+        val (_, target) = (interaction as SelectMenuInteraction).resolvedObjects!!.users!!.iterator().next()
 
         if (state.players[target]?.team != Team.GOOD) {
             interaction.respondEphemeral {
@@ -66,7 +67,7 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         val message = interaction.respondPublic {
             content = """
                 ### Assassin Target
-                ${targetUser.mention}
+                ${target.mention}
             """.trimIndent()
         }
 
@@ -79,7 +80,7 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         message.edit {
             content = """
                 ### Assassin Target
-                ${targetUser.mention} was${if (winner == Team.GOOD) " not" else ""} Merlin
+                ${target.mention} was${if (winner == Team.GOOD) " not" else ""} Merlin
             """.trimIndent()
         }
 

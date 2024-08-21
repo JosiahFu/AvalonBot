@@ -2,6 +2,7 @@
 
 package bot.avalon
 
+import bot.avalon.data.loadGameState
 import bot.avalon.kord.commands
 import bot.avalon.kord.message.GameMessageType
 import dev.kord.core.Kord
@@ -35,6 +36,7 @@ suspend fun main() {
 
         on<ReadyEvent> {
             println("Logged in!")
+            loadGameState(this@with)
         }
 
         login {

@@ -2,6 +2,7 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
+import bot.avalon.data.contains
 import bot.avalon.kord.Emojis
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
@@ -21,7 +22,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         Requires ${state.currentQuest.size} questers
         ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
         Attempt ${state.attempt}/5
-        ${kord.getUser(state.leader)?.mention} is quest leader
+        ${state.leader.mention} is quest leader
     """.trimIndent()
 
     override suspend fun MessageBuilder.components(state: GameState.Discussion, kord: Kord, disable: Boolean) {
@@ -40,19 +41,19 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        if (interaction.user.id !in state.players) {
+        if (interaction.user !in state.players) {
             interaction.respondNotInGame()
             return
         }
 
-        if (interaction.user.id != state.leader) {
+        if (interaction.user != state.leader) {
             interaction.respondEphemeral {
                 content = "You are not the leader of this quest"
             }
             return
         }
 
-        val selectedUsers = (interaction as SelectMenuInteraction).resolvedObjects?.users!!.keys
+        val selectedUsers = (interaction as SelectMenuInteraction).resolvedObjects?.users!!.values
 
         if (selectedUsers.any { it !in state.players }) {
             interaction.respondEphemeral {

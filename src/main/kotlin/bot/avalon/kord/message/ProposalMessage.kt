@@ -2,6 +2,8 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
+import bot.avalon.data.asBehavior
+import bot.avalon.data.contains
 import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
@@ -20,7 +22,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
 
     override suspend fun content(state: GameState.Proposal, kord: Kord) = """
         |### Proposed quest:
-        |${state.proposedTeam.map { kord.getUser(it)!!.mention }.joinToString("\n")}
+        |${state.proposedTeam.joinToString("\n") { it.mention }}
         |${state.votes.size}/${state.players.size} votes in
         """.trimMargin()
 
@@ -46,14 +48,14 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-        if (interaction.user.id !in state.players) {
+        if (interaction.user !in state.players) {
             interaction.respondNotInGame()
             return
         }
 
         when (componentId) {
             APPROVE -> {
-                state.votes[interaction.user.id] = true
+                state.votes[interaction.user.asBehavior()] = true
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.THUMBS_UP} APPROVE"
@@ -61,7 +63,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
                 }
             }
             DENY -> {
-                state.votes[interaction.user.id] = false
+                state.votes[interaction.user.asBehavior()] = false
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.THUMBS_DOWN} DENY"
@@ -79,7 +81,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         interaction.channel.createMessage {
             content =
                 "### Vote Results\n" +
-                        state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${interaction.kord.getUser(player)!!.mention}" }.joinToString("\n")
+                        state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${player.mention}" }.joinToString("\n")
         }
 
         delay(2000)
