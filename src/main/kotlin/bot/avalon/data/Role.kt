@@ -1,22 +1,24 @@
 package bot.avalon.data
 
+import bot.avalon.kord.Emojis
 import bot.avalon.lib.removeRandom
 
 enum class Team { GOOD, EVIL }
 
 enum class Role(
     private val formatName: String,
+    val emoji: String,
     val team: Team,
     val isOptional: Boolean = false,
 ) {
-    ARTHUR_SERVANT("Servant of Arthur", Team.GOOD),
-    MERLIN("Merlin", Team.GOOD),
-    PERCIVAL("Percival", Team.GOOD, isOptional = true),
-    MORDRED_MINION("Minion of Mordred", Team.EVIL),
-    MORDRED("Mordred", Team.EVIL, isOptional = true),
-    ASSASSIN("Assassin", Team.EVIL),
-    OBERON("Oberon", Team.EVIL, isOptional = true),
-    MORGANA("Morgana", Team.EVIL, isOptional = true);
+    ARTHUR_SERVANT("Servant of Arthur", Emojis.MAN_POUTING, Team.GOOD),
+    MERLIN("Merlin", Emojis.MAN_MAGE, Team.GOOD),
+    PERCIVAL("Percival", Emojis.MAN_ASTRONAUT, Team.GOOD, isOptional = true),
+    MORDRED_MINION("Minion of Mordred", Emojis.PERSON_POUTING, Team.EVIL),
+    MORDRED("Mordred", Emojis.MAN_SUPERVILLAIN, Team.EVIL, isOptional = true),
+    ASSASSIN("Assassin", Emojis.KNIFE, Team.EVIL),
+    OBERON("Oberon", Emojis.FAIRY, Team.EVIL, isOptional = true),
+    MORGANA("Morgana", Emojis.MAGE, Team.EVIL, isOptional = true);
 
     lateinit var visible: Set<Role>
         private set

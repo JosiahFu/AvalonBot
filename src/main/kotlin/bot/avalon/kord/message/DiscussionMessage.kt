@@ -17,7 +17,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
     override suspend fun content(state: GameState.Discussion, kord: Kord): String = """
         ## Discussion
         
-        # ${state.quests.joinToString(" ") { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.KNIFE) else Emojis.NUMBER[it.size] }}
+        # ${state.quests.joinToString(" ") { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.DAGGER) else Emojis.NUMBER[it.size] }}
         
         Requires ${state.currentQuest.size} questers
         ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}

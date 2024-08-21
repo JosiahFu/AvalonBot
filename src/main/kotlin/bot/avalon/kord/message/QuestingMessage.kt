@@ -35,7 +35,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
             interactionButton(ButtonStyle.Danger, FAIL) {
                 label = "Fail"
-                emoji = DiscordPartialEmoji(name = Emojis.KNIFE)
+                emoji = DiscordPartialEmoji(name = Emojis.DAGGER)
                 if (disable) disabled = true
             }
         }
@@ -79,7 +79,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
                 state.votes[interaction.user] = false
                 interaction.kord.launch {
                     interaction.respondEphemeral {
-                        content = "Your vote: ${Emojis.KNIFE} FAIL"
+                        content = "Your vote: ${Emojis.DAGGER} FAIL"
                     }
                 }
             }
@@ -107,7 +107,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
             resultMessage.edit {
                 content = """
                 ### Quest Results
-                # ${votes.mapIndexed { index, vote -> if (index > revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.KNIFE }.joinToString(" ")}
+                # ${votes.mapIndexed { index, vote -> if (index > revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.DAGGER }.joinToString(" ")}
             """.trimIndent()
             }
         }

@@ -26,7 +26,7 @@ suspend fun ActionInteraction.showRole(state: GameState.RoledState) {
 
     respondEphemeral {
         content = """
-            You are **$role**!
+            You are ${role.emoji} **$role**!
             $visibleMessage
             $description
         """.trimIndent()
