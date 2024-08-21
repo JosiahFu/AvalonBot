@@ -11,7 +11,6 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
-import kotlin.enums.enumEntries
 
 object JoinMessage : GameMessageType<GameState.Join>() {
     private const val START = "start_game"
@@ -19,7 +18,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
     private const val CANCEL = "cancel_game"
     private const val LEAVE = "leave"
 
-    override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + enumEntries<Role>().map(Role::name)
+    override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + Role.entries.map(Role::name)
 
     override suspend fun content(state: GameState.Join, kord: Kord) = """
         |# New Game
@@ -30,7 +29,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
     override suspend fun MessageBuilder.components(state: GameState.Join, kord: Kord, disable: Boolean) {
 
         actionRow {
-            for (role in enumEntries<Role>()) if (role.isOptional) {
+            for (role in Role.entries) if (role.isOptional) {
                 val enabled = role in state.optionalRoles
 
                 interactionButton(if (enabled) ButtonStyle.Success else ButtonStyle.Secondary, role.name) {

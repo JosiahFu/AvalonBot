@@ -1,7 +1,6 @@
 package bot.avalon.data
 
 import bot.avalon.lib.removeRandom
-import kotlin.enums.enumEntries
 
 enum class Team { GOOD, EVIL }
 
@@ -28,7 +27,7 @@ enum class Role(
     override fun toString(): String = formatName
 
     companion object {
-        val evilTeam = enumEntries<Role>().filter { it.team == Team.EVIL }.toSet()
+        val evilTeam = Role.entries.filter { it.team == Team.EVIL }.toSet()
         val mordredMinions = evilTeam - OBERON
 
         init {
@@ -68,11 +67,11 @@ fun getTeamSizes(players: Int): TeamSizes = when (players) {
 fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
     // TODO Remove this it's for testing
     if (players == 1) {
-        return listOf(Role.ASSASSIN)
+        return listOf(Role.entries.random())
     }
 
     val (good, evil) = getTeamSizes(players)
-    val specialRoles = enumEntries<Role>().filter { !it.isDefault && (!it.isOptional || it in enabled) }
+    val specialRoles = Role.entries.filter { !it.isDefault && (!it.isOptional || it in enabled) }
 
     return specialRoles +
             List(good - specialRoles.count { it.team == Team.GOOD }) { Role.defaultGood } +
@@ -84,8 +83,3 @@ fun assignRoles(players: Set<UserId>, optionalsEnabled: Collection<Role>): Map<U
 
     return players.associateWith { remainingRoles.removeRandom() }
 }
-
-// TODO
-//fun visibleMessage(role: Role, state: Collection<Role>) = when(role) {
-//    Role.MERLIN -> "The minions of mordred"
-//}

@@ -17,13 +17,10 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
     private const val ASSASSIN_TARGET = "assassin_target"
 
     override suspend fun content(state: GameState.Assassin, kord: Kord): String = """
-        |## GOOD succeeds
-        |
-        |### EVIL Roles
-        |${state.players.filterValues { it.team == Team.EVIL }.map { (user, role) -> "${user.mention}: $role" }.joinToString("\n")}
-        |### Assassin
-        |${state.assassin.mention}
-    """.trimMargin()
+        ## GOOD succeeds
+        
+        ${state.assassin.mention} is the assassin
+    """.trimIndent()
 
     override suspend fun MessageBuilder.components(state: GameState.Assassin, kord: Kord, disable: Boolean) {
         actionRow {
