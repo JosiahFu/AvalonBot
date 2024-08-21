@@ -2,11 +2,11 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
-import bot.avalon.data.contains
+import bot.avalon.data.getMemberBehavior
 import bot.avalon.kord.Emojis
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.core.entity.interaction.SelectMenuInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
@@ -36,7 +36,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
     }
 
     override suspend fun onInteract(
-        interaction: ComponentInteraction,
+        interaction: GuildComponentInteraction,
         state: GameState.Discussion,
         componentId: String,
         setState: (GameState?) -> Unit
@@ -53,7 +53,7 @@ object DiscussionMessage : GameMessageType<GameState.Discussion>() {
             return
         }
 
-        val selectedUsers = (interaction as SelectMenuInteraction).resolvedObjects?.users!!.values
+        val selectedUsers = (interaction as SelectMenuInteraction).resolvedObjects!!.users!!.values.map { interaction.guild.getMemberBehavior(it) }
 
         if (selectedUsers.any { it !in state.players }) {
             interaction.respondEphemeral {

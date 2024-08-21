@@ -79,7 +79,7 @@ fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
             List(evil - specialRoles.count { it.team == Team.EVIL }) { Role.defaultEvil }
 }
 
-fun assignRoles(players: Collection<UserId>, optionalsEnabled: Collection<Role>): Map<UserId, Role> {
+fun assignRoles(players: Set<UserId>, optionalsEnabled: Collection<Role>): Map<UserId, Role> {
     val remainingRoles = getRoles(players.size, optionalsEnabled).toMutableList()
 
     return players.associateWith { remainingRoles.removeRandom() }

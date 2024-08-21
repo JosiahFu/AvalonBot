@@ -2,12 +2,12 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
-import bot.avalon.data.contains // This is important to ensure Member can be checked for presence in a map
+import bot.avalon.data.getMemberBehavior
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.core.entity.interaction.SelectMenuInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
@@ -36,7 +36,7 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
     }
 
     override suspend fun onInteract(
-        interaction: ComponentInteraction,
+        interaction: GuildComponentInteraction,
         state: GameState.Assassin,
         componentId: String,
         setState: (GameState?) -> Unit
@@ -53,7 +53,7 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
             return
         }
 
-        val (_, target) = (interaction as SelectMenuInteraction).resolvedObjects!!.users!!.iterator().next()
+        val target = interaction.guild.getMemberBehavior((interaction as SelectMenuInteraction).resolvedObjects!!.users!!.values.first())
 
         if (state.players[target]?.team != Team.GOOD) {
             interaction.respondEphemeral {

@@ -2,15 +2,13 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Team
-import bot.avalon.data.asBehavior
-import bot.avalon.data.contains
 import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 import kotlinx.coroutines.delay
@@ -43,7 +41,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
     }
 
     override suspend fun onInteract(
-        interaction: ComponentInteraction,
+        interaction: GuildComponentInteraction,
         state: GameState.Proposal,
         componentId: String,
         setState: (GameState?) -> Unit
@@ -55,7 +53,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
 
         when (componentId) {
             APPROVE -> {
-                state.votes[interaction.user.asBehavior()] = true
+                state.votes[interaction.user] = true
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.THUMBS_UP} APPROVE"
@@ -63,7 +61,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
                 }
             }
             DENY -> {
-                state.votes[interaction.user.asBehavior()] = false
+                state.votes[interaction.user] = false
                 interaction.kord.launch {
                     interaction.respondEphemeral {
                         content = "Your vote: ${Emojis.THUMBS_DOWN} DENY"

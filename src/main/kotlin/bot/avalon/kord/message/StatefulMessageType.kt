@@ -7,7 +7,7 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.interaction.ActionInteraction
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 
 @Suppress("UNCHECKED_CAST")
@@ -24,21 +24,21 @@ abstract class StatefulMessageType<T: U, U> {
         components(state, kord)
     }
 
-    protected suspend fun ComponentInteraction.updateContent(defer: Boolean = true) {
+    protected suspend fun GuildComponentInteraction.updateContent(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
             content = content(state as T, kord)
         }
     }
 
-    protected suspend fun ComponentInteraction.updateEmbeds(defer: Boolean = true) {
+    protected suspend fun GuildComponentInteraction.updateEmbeds(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
             embeds(state as T, kord)
         }
     }
 
-    protected suspend fun ComponentInteraction.updateComponents(defer: Boolean = true) {
+    protected suspend fun GuildComponentInteraction.updateComponents(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
             components(state as T, kord)
@@ -51,12 +51,12 @@ abstract class StatefulMessageType<T: U, U> {
         }
     }
 
-    protected open suspend fun ComponentInteraction.disableComponents(defer: Boolean = false) {
+    protected open suspend fun GuildComponentInteraction.disableComponents(defer: Boolean = false) {
         if (defer) deferPublicMessageUpdate()
         this.message.disableComponents(state)
     }
 
-    protected suspend fun ComponentInteraction.updateAll(defer: Boolean = true) {
+    protected suspend fun GuildComponentInteraction.updateAll(defer: Boolean = true) {
         if (defer) deferPublicMessageUpdate()
         this.message.edit {
             configureWith(state as T, kord)
@@ -75,9 +75,9 @@ abstract class StatefulMessageType<T: U, U> {
         }
     }
 
-    protected open suspend fun onInteract(interaction: ComponentInteraction, state: T, componentId: String, setState: (U) -> Unit ) {}
+    protected open suspend fun onInteract(interaction: GuildComponentInteraction, state: T, componentId: String, setState: (U) -> Unit ) {}
 
-    open suspend fun interact(interaction: ComponentInteraction, componentId: String) {
+    open suspend fun interact(interaction: GuildComponentInteraction, componentId: String) {
         this.onInteract(interaction, interaction.state as T, componentId) { interaction.state = it }
     }
 

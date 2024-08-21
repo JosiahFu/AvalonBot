@@ -2,12 +2,13 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Role
-import bot.avalon.data.asBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.entity.Member
 import dev.kord.core.entity.interaction.ActionInteraction
 
 suspend fun ActionInteraction.showRole(state: GameState.RoledState) {
-    val role = state.players[user.asBehavior()]!!
+    val user = user as Member
+    val role = state.players[user]!!
     val visiblePlayers = state.getVisibleTo(user).map { it.mention }.joinFormatted("no one")
 
     val visibleMessage = when (role) {

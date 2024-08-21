@@ -1,13 +1,12 @@
 package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
-import bot.avalon.data.asBehavior
-import bot.avalon.data.contains // This is important to ensure Member can be checked for presence in a map
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.entity.Member
 import dev.kord.core.entity.interaction.ActionInteraction
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 
@@ -30,7 +29,7 @@ object StartMessage : GameMessageType<GameState.Start>() {
     }
 
     override suspend fun onInteract(
-        interaction: ComponentInteraction,
+        interaction: GuildComponentInteraction,
         state: GameState.Start,
         componentId: String,
         setState: (GameState?) -> Unit
@@ -44,7 +43,7 @@ object StartMessage : GameMessageType<GameState.Start>() {
 
         if (componentId == VIEW_ROLE) return
 
-        state.seenRoles.add(interaction.user.asBehavior())
+        state.seenRoles.add(interaction.user)
 
         interaction.updateContent(false)
 
@@ -57,7 +56,7 @@ object StartMessage : GameMessageType<GameState.Start>() {
         }
     }
 
-    override suspend fun interact(interaction: ComponentInteraction, componentId: String) {
+    override suspend fun interact(interaction: GuildComponentInteraction, componentId: String) {
         if (componentId == VIEW_ROLE) {
             showRole(interaction)
             return
@@ -77,7 +76,7 @@ object StartMessage : GameMessageType<GameState.Start>() {
             return
         }
 
-        if (interaction.user !in state.players) {
+        if (interaction.user as Member !in state.players) {
             interaction.respondNotInGame()
             return
         }

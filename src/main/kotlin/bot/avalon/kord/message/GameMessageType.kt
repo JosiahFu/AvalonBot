@@ -5,7 +5,7 @@ import bot.avalon.data.STATES
 import bot.avalon.data.saveGameStates
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.interaction.ActionInteraction
-import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.core.entity.interaction.GuildComponentInteraction
 
 abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?>() {
     override var ActionInteraction.state: GameState?
@@ -17,7 +17,7 @@ abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?
                 STATES[this.channelId] = value
         }
 
-    override suspend fun ComponentInteraction.disableComponents(defer: Boolean) {
+    override suspend fun GuildComponentInteraction.disableComponents(defer: Boolean) {
         // Can't use super here because it's a member extension function
         // just gotta copy-paste the code...
         this.state!!.message = null
@@ -35,13 +35,13 @@ abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?
 
 suspend fun GameState.respondTo(interaction: ActionInteraction) {
     messageType.respondTo(interaction)
-    this.message = interaction.getOriginalInteractionResponse().id
+    this.message = interaction.getOriginalInteractionResponse()
     saveGameStates()
 }
 
 suspend fun GameState.sendInChannel(interaction: ActionInteraction) {
     messageType.sendInChannel(interaction).also {
-        this.message = it.id
+        this.message = it
     }
     saveGameStates()
 }

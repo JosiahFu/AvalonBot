@@ -8,7 +8,7 @@ import bot.avalon.kord.message.GameMessageType
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import dev.kord.core.event.interaction.ComponentInteractionCreateEvent
+import dev.kord.core.event.interaction.GuildComponentInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import io.github.cdimascio.dotenv.Dotenv
@@ -25,7 +25,7 @@ suspend fun main() {
             commands.find { it.name == interaction.invokedCommandName }!!.run { execute() }
         }
 
-        on<ComponentInteractionCreateEvent> {
+        on<GuildComponentInteractionCreateEvent> {
             try {
                 GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
             } catch (e: NullPointerException) {

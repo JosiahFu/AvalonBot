@@ -2,7 +2,7 @@ package bot.avalon.kord
 
 import bot.avalon.data.GameState
 import bot.avalon.data.STATES
-import bot.avalon.data.getMessageBehavior
+import bot.avalon.kord.message.StartMessage
 import bot.avalon.kord.message.StatefulMessageType.Companion.disableComponents
 import bot.avalon.kord.message.messageType
 import bot.avalon.kord.message.sendInChannel
@@ -54,7 +54,7 @@ val commands = listOf(
     ) {
         val state = STATES[interaction.channelId]
         if (state == null) {
-            interaction.respondPublic {
+            interaction.respondEphemeral {
                 content = "This channel does not currently have a game running"
             }
             return@Command
@@ -64,18 +64,17 @@ val commands = listOf(
 
         interaction.kord.launch {
             state.messageType.disableComponents(
-                interaction.channel.getMessageBehavior(message),
+                message,
                 state,
             )
         }
 
-        interaction.respondEphemeral {
+        interaction.respondPublic {
             content = "Canceled the current game"
         }
 
         STATES.remove(interaction.channelId)
     },
-
     Command(
         "resend",
         "Resend the message for the current phase",
@@ -91,10 +90,7 @@ val commands = listOf(
         val message = state.message ?: return@Command
 
         interaction.kord.launch {
-            state.messageType.disableComponents(
-                interaction.channel.getMessageBehavior(message),
-                state,
-            )
+            state.messageType.disableComponents(message, state)
         }
 
         interaction.kord.launch {
@@ -103,4 +99,18 @@ val commands = listOf(
 
         state.sendInChannel(interaction)
     },
+    Command(
+        "showrole",
+        "Show your role and the secret information you know",
+    ) {
+        val state = STATES[interaction.channelId]
+        if (state !is GameState.RoledState) {
+            interaction.respondEphemeral {
+                content = "This channel does not currently have a game running"
+            }
+            return@Command
+        }
+
+        StartMessage.showRole(interaction)
+    }
 )

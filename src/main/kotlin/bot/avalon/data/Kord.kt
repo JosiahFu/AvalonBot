@@ -2,6 +2,7 @@ package bot.avalon.data
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.MemberBehavior
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.UserBehavior
@@ -19,22 +20,37 @@ object KordSerializer {
 
     private fun Decoder.decodeSnowflake() = Snowflake(decodeLong())
 
-    class User : KSerializer<UserBehavior> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UserBehavior", PrimitiveKind.LONG)
+    class Member : KSerializer<MemberBehavior> {
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("MemberBehavior", PrimitiveKind.STRING)
 
-        override fun deserialize(decoder: Decoder): UserBehavior = UserBehavior(decoder.decodeSnowflake(), kord)
+        override fun deserialize(decoder: Decoder): MemberBehavior {
+            val (guildId, id) = decoder.decodeString().split(":").map { Snowflake(it.toLong()) }
+            return MemberBehavior(guildId, id, kord)
+        }
 
-        override fun serialize(encoder: Encoder, value: UserBehavior) {
-            encoder.encodeLong(value.id.value.toLong())
+        override fun serialize(encoder: Encoder, value: MemberBehavior) {
+            encoder.encodeString("${value.guildId.value.toLong()}:${value.id.value.toLong()}")
+        }
+    }
+
+    class Message : KSerializer<MessageBehavior> {
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("MessageBehavior", PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder): MessageBehavior {
+            val (channelId, id) = decoder.decodeString().split(":").map { Snowflake(it.toLong()) }
+            return MessageBehavior(channelId, id, kord)
+        }
+
+        override fun serialize(encoder: Encoder, value: MessageBehavior) {
+            encoder.encodeString("${value.channelId.value.toLong()}:${value.id.value.toLong()}")
         }
     }
 }
 
-typealias UserId = @Serializable(with = KordSerializer.User::class) UserBehavior
-typealias MessageId = Snowflake
+typealias UserId = @Serializable(with = KordSerializer.Member::class) MemberBehavior
+typealias MessageId = @Serializable(with = KordSerializer.Message::class) MessageBehavior
 
 fun ChannelBehavior.getMessageBehavior(messageId: Snowflake) = MessageBehavior(id, messageId, kord)
 suspend fun ChannelBehavior.getMessage(messageId: Snowflake) = supplier.getMessage(id, messageId)
-fun UserBehavior.asBehavior() = if (this is MemberBehavior) UserBehavior(id, kord) else this
-
-operator fun Map<UserId, *>.contains(key: UserId) = containsKey(key.asBehavior())
+fun GuildBehavior.getMemberBehavior(id: Snowflake) = MemberBehavior(this.id, id, kord)
+fun GuildBehavior.getMemberBehavior(user: UserBehavior) = MemberBehavior(id, user.id, kord)
