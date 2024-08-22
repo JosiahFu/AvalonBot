@@ -12,6 +12,7 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -19,11 +20,17 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
     private const val SUCCESS = "quest_success"
     private const val FAIL = "quest_fail"
 
-    override suspend fun content(state: GameState.Questing, kord: Kord) = """
-        |## Quest
-        |${state.team.joinToString("\n") { it.mention }}
-        |${state.votes.size}/${state.team.size} votes in
-        """.trimMargin()
+    override suspend fun MessageBuilder.embeds(state: GameState.Questing, kord: Kord) {
+        embed {
+            title = "Quest"
+            field("Team") {
+                state.team.joinToString("\n") { it.mention }
+            }
+            field("Votes in") {
+                "${state.votes.size}/${state.team.size}"
+            }
+        }
+    }
 
     override suspend fun MessageBuilder.components(state: GameState.Questing, kord: Kord, disable: Boolean) {
         actionRow {
@@ -86,7 +93,7 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
         }
 
         interaction.kord.launch {
-            interaction.updateContent(false)
+            interaction.updateEmbeds(false)
         }
 
         val message = state.message
@@ -95,22 +102,23 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
 
         interaction.disableComponents()
 
-        val resultMessage = message.reply {
-            content = """
-                ### Quest Results
-                # ${List(state.votes.size) { Emojis.QUESTION }.joinToString(" ")}
-            """.trimIndent()
+        val votes = state.votes.values.shuffled()
+
+        fun MessageBuilder.partialResults(reveal: Int) {
+            embed {
+                title = "Quest Results"
+                description = "# ${votes.mapIndexed { index, vote -> if (index >= reveal) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.DAGGER }.joinToString(" ")}"
+            }
         }
 
-        val votes = state.votes.values.shuffled()
+        val resultMessage = message.reply {
+            partialResults(0)
+        }
 
         for (revealIndex in votes.indices) {
             delay(2000)
             resultMessage.edit {
-                content = """
-                ### Quest Results
-                # ${votes.mapIndexed { index, vote -> if (index > revealIndex) Emojis.QUESTION else if (vote) Emojis.TROPHY else Emojis.DAGGER }.joinToString(" ")}
-            """.trimIndent()
+                partialResults(revealIndex + 1)
             }
         }
 

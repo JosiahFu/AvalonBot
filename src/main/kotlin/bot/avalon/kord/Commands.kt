@@ -21,12 +21,6 @@ data class Command(
 
 val commands = listOf(
     Command(
-        "ping",
-        "ping the bot",
-    ) {
-        interaction.respondPublic { content = "pong" }
-    },
-    Command(
         "start",
         "Start a game of Avalon",
     ) {
@@ -100,7 +94,7 @@ val commands = listOf(
         state.sendInChannel(interaction)
     },
     Command(
-        "showrole",
+        "viewrole",
         "Show your role and the secret information you know",
     ) {
         interaction.tryShowRole()

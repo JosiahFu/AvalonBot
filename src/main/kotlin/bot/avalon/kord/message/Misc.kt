@@ -7,15 +7,16 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.ActionInteractionBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.rest.builder.message.embed
 
 suspend fun MessageChannelBehavior.sendWinMessage(team: Team, players: Map<UserId, Role>) {
     createMessage {
-        content = """
-            |## ${team.name} Team Wins!
-            |
-            |### Roles
-            |${players.map { (user, role) -> "${user.mention}: $role" }.joinToString("\n")}
-        """.trimMargin()
+        embed {
+            title = "${team.name} Team Wins!"
+            for ((user, role) in players) {
+                field(user.fetchMember().effectiveName) { "${role.emoji} ${role.name}" }
+            }
+        }
     }
 }
 

@@ -11,6 +11,7 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -18,11 +19,15 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
     private const val APPROVE = "approve_quest"
     private const val DENY = "deny_quest"
 
-    override suspend fun content(state: GameState.Proposal, kord: Kord) = """
-        |### Proposed quest:
-        |${state.proposedTeam.joinToString("\n") { it.mention }}
-        |${state.votes.size}/${state.players.size} votes in
-        """.trimMargin()
+    override suspend fun MessageBuilder.embeds(state: GameState.Proposal, kord: Kord) {
+        embed {
+            title = "Proposed Quest"
+            description = state.proposedTeam.joinToString("\n") { it.mention }
+            field("Votes in") {
+                "${state.votes.size}/${state.players.size}"
+            }
+        }
+    }
 
     override suspend fun MessageBuilder.components(state: GameState.Proposal, kord: Kord, disable: Boolean) {
         actionRow {
@@ -70,7 +75,7 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
             }
         }
 
-        interaction.updateContent(false)
+        interaction.updateEmbeds(false)
 
         val message = state.message
 
@@ -79,9 +84,11 @@ object ProposalMessage : GameMessageType<GameState.Proposal>() {
         interaction.disableComponents()
 
         message.reply {
-            content =
-                "### Vote Results\n" +
-                        state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${player.mention}" }.joinToString("\n")
+            embed {
+                title = "Vote Results"
+                description =
+                    state.votes.map { (player, vote) -> "${if (vote) Emojis.THUMBS_UP else Emojis.THUMBS_DOWN} ${player.mention}" }.joinToString("\n")
+            }
         }
 
         delay(2000)

@@ -14,7 +14,7 @@ import dev.kord.rest.builder.message.MessageBuilder
 abstract class StatefulMessageType<T: U, U> {
     abstract var ActionInteraction.state: U
 
-    protected abstract suspend fun content(state: T, kord: Kord): String
+    protected open suspend fun content(state: T, kord: Kord): String = ""
     protected open suspend fun MessageBuilder.embeds(state: T, kord: Kord) {}
     protected abstract suspend fun MessageBuilder.components(state: T, kord: Kord, disable: Boolean = false)
 

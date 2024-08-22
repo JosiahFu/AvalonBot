@@ -11,16 +11,20 @@ import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.core.entity.interaction.SelectMenuInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.delay
 
 object AssassinMessage : GameMessageType<GameState.Assassin>() {
     private const val ASSASSIN_TARGET = "assassin_target"
 
-    override suspend fun content(state: GameState.Assassin, kord: Kord): String = """
-        ## GOOD succeeds
-        
-        ${state.assassin.mention} is the assassin
-    """.trimIndent()
+    override suspend fun MessageBuilder.embeds(state: GameState.Assassin, kord: Kord) {
+        embed {
+            title = "GOOD succeeds"
+            field("Assassin") {
+                state.assassin.mention
+            }
+        }
+    }
 
     override suspend fun MessageBuilder.components(state: GameState.Assassin, kord: Kord, disable: Boolean) {
         actionRow {
@@ -62,10 +66,11 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         interaction.disableComponents(defer = true)
 
         val message = interaction.channel.createMessage {
-            content = """
-                ### Assassin Target
-                ${target.mention}
-            """.trimIndent()
+            embed {
+                title = "Assassin Target"
+
+                description = target.mention
+            }
         }
 
         delay(5000)
@@ -75,10 +80,11 @@ object AssassinMessage : GameMessageType<GameState.Assassin>() {
         delay(2000)
 
         message.edit {
-            content = """
-                ### Assassin Target
-                ${target.mention} was${if (winner == Team.GOOD) " not" else ""} Merlin
-            """.trimIndent()
+            embed {
+                title = "Assassin Target"
+
+                description = "${target.mention} was${if (winner == Team.GOOD) " not" else ""} Merlin"
+            }
         }
 
         delay(2000)

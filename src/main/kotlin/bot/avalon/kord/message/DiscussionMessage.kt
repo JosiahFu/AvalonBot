@@ -10,20 +10,28 @@ import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.core.entity.interaction.SelectMenuInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 
 object DiscussionMessage : GameMessageType<GameState.Discussion>() {
     private const val USER_SELECT = "user_select"
 
-    override suspend fun content(state: GameState.Discussion, kord: Kord): String = """
-        ## Discussion
-        
-        # ${state.quests.joinToString(" ") { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.DAGGER) else Emojis.NUMBER[it.size] }}
-        
-        Requires ${state.currentQuest.size} questers
-        ${if (state.currentQuest.requiredFails > 1) "Requires ${state.currentQuest.requiredFails} fails" else ""}
-        Attempt ${state.attempt}/5
-        ${state.leader.mention} is quest leader
-    """.trimIndent()
+    override suspend fun MessageBuilder.embeds(state: GameState.Discussion, kord: Kord) {
+        embed {
+            title = "Discussion"
+
+            description = """
+                # ${state.quests.joinToString(" ") { if (it.isComplete) (if (it.winner == Team.GOOD) Emojis.TROPHY else Emojis.DAGGER) else Emojis.NUMBER[it.size] }}
+            """.trimIndent()
+
+            field("Questers", inline = true) { "${state.currentQuest.size}" }
+            if (state.currentQuest.requiredFails > 1) field(
+                "Fails required",
+                inline = true
+            ) { "${state.currentQuest.requiredFails}" }
+            field("Attempt", inline = true) { "${state.attempt}/5" }
+            field("Leader") { state.leader.mention }
+        }
+    }
 
     override suspend fun MessageBuilder.components(state: GameState.Discussion, kord: Kord, disable: Boolean) {
         actionRow {

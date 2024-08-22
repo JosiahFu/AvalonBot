@@ -11,6 +11,7 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 
 object JoinMessage : GameMessageType<GameState.Join>() {
     private const val START = "start_game"
@@ -20,11 +21,15 @@ object JoinMessage : GameMessageType<GameState.Join>() {
 
     override val ids: Collection<String> = listOf(START, JOIN, CANCEL, LEAVE) + Role.entries.map(Role::name)
 
-    override suspend fun content(state: GameState.Join, kord: Kord) = """
-        |# New Game
-        |Players joined:${if (state.players.isEmpty()) " None" else ""}
-        |${state.players.map { it.mention }.joinToString("\n")}
-    """.trimMargin()
+    override suspend fun MessageBuilder.embeds(state: GameState.Join, kord: Kord) {
+        embed {
+            title = "New Game"
+
+            field("Players joined") {
+                if (state.players.isEmpty()) "None" else state.players.joinToString("\n") { it.mention }
+            }
+        }
+    }
 
     override suspend fun MessageBuilder.components(state: GameState.Join, kord: Kord, disable: Boolean) {
 
@@ -88,7 +93,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
                 if (state.players.add(interaction.user)) {
                     interaction.deferPublicMessageUpdate()
                     interaction.message.edit {
-                        content = content(state, interaction.kord)
+                        embeds(state, interaction.kord)
                         components(state, interaction.kord)
                     }
                 } else
@@ -96,7 +101,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
             }
             LEAVE -> {
                 if (state.players.remove(interaction.user)) {
-                    interaction.updateContent()
+                    interaction.updateEmbeds()
                 } else
                     interaction.respondEphemeral { content = "Cannot leave: You are not in this game" }
             }

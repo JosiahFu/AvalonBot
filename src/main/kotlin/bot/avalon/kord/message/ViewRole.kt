@@ -6,6 +6,7 @@ import bot.avalon.data.STATES
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.interaction.ActionInteraction
+import dev.kord.rest.builder.message.embed
 
 suspend fun ActionInteraction.tryShowRole() {
     val state = STATES[this.channelId]
@@ -37,17 +38,20 @@ suspend fun ActionInteraction.showRole(state: GameState.RoledState) {
         else -> ""
     }
 
-    val description = when (role) {
+    val info = when (role) {
         in Role.mordredMinions -> "-# All Minions of Mordred know each other. Merlin knows all Minions of Mordred${if (Role.MORDRED in state.players.values) " except Mordred" else ""}.${if (Role.OBERON in state.players.values) " Oberon does not know the Minions of Mordred and the Minions do not know him." else ""}${if (role == Role.MORGANA) " Morgana appears to be Merlin to Percival." else ""}${if (role == Role.ASSASSIN) " Find out who Merlin is." else ""}"
         Role.OBERON -> "-# Oberon does not know the Minions of Mordred and the Minions do not know him."
         else -> ""
     }
 
     respondEphemeral {
-        content = """
-            You are ${role.emoji} **$role**!
-            $visibleMessage
-            $description
-        """.trimIndent()
+        embed {
+            title = "${role.emoji} You are **$role**!"
+
+            description = """
+                $visibleMessage
+                $info
+            """.trimIndent()
+        }
     }
 }
