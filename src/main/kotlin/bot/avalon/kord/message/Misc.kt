@@ -14,7 +14,7 @@ suspend fun MessageChannelBehavior.sendWinMessage(team: Team, players: Map<UserI
         embed {
             title = "${team.name} Team Wins!"
             for ((user, role) in players) {
-                field(user.fetchMember().effectiveName) { "${role.emoji} ${role.name}" }
+                field(user.fetchMember().effectiveName) { "${role.emoji} $role" }
             }
         }
     }
