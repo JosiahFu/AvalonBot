@@ -6,9 +6,9 @@ import bot.avalon.kord.Emojis
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.reply
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
@@ -89,11 +89,13 @@ object QuestingMessage : GameMessageType<GameState.Questing>() {
             interaction.updateContent(false)
         }
 
-        if (!state.allVotesIn || state.message == null) return
+        val message = state.message
+
+        if (!state.allVotesIn || message == null) return
 
         interaction.disableComponents()
 
-        val resultMessage = interaction.channel.createMessage {
+        val resultMessage = message.reply {
             content = """
                 ### Quest Results
                 # ${List(state.votes.size) { Emojis.QUESTION }.joinToString(" ")}

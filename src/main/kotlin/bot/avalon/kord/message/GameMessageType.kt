@@ -29,7 +29,7 @@ abstract class GameMessageType<T: GameState> : StatefulMessageType<T, GameState?
     }
 
     companion object {
-        fun of(componentId: String) = messageTypes.find { componentId in it.ids }!!
+        fun of(componentId: String) = messageTypes.find { componentId in it.ids }
     }
 }
 

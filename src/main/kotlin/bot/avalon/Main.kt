@@ -5,6 +5,8 @@ package bot.avalon
 import bot.avalon.data.loadGameState
 import bot.avalon.kord.commands
 import bot.avalon.kord.message.GameMessageType
+import bot.avalon.kord.message.StartMessage
+import bot.avalon.kord.message.tryShowRole
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -26,12 +28,13 @@ suspend fun main() {
         }
 
         on<GuildComponentInteractionCreateEvent> {
-            try {
-                GameMessageType.of(interaction.componentId).interact(interaction, interaction.componentId)
-            } catch (e: NullPointerException) {
-                println("Could not find message for ${interaction.componentId}")
-                throw e
+            if (interaction.componentId == StartMessage.VIEW_ROLE) {
+                interaction.tryShowRole()
+                return@on
             }
+
+            GameMessageType.of(interaction.componentId)?.interact(interaction, interaction.componentId)
+                ?: println("Could not find message for ${interaction.componentId}")
         }
 
         on<ReadyEvent> {

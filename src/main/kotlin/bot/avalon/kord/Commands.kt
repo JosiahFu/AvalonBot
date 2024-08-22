@@ -2,10 +2,10 @@ package bot.avalon.kord
 
 import bot.avalon.data.GameState
 import bot.avalon.data.STATES
-import bot.avalon.kord.message.StartMessage
 import bot.avalon.kord.message.StatefulMessageType.Companion.disableComponents
 import bot.avalon.kord.message.messageType
 import bot.avalon.kord.message.sendInChannel
+import bot.avalon.kord.message.tryShowRole
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -60,20 +60,20 @@ val commands = listOf(
             return@Command
         }
 
-        val message = state.message ?: return@Command
-
-        interaction.kord.launch {
-            state.messageType.disableComponents(
-                message,
-                state,
-            )
+        state.message?.let { message ->
+            interaction.kord.launch {
+                state.messageType.disableComponents(
+                    message,
+                    state,
+                )
+            }
         }
+
+        STATES.remove(interaction.channelId)
 
         interaction.respondPublic {
             content = "Canceled the current game"
         }
-
-        STATES.remove(interaction.channelId)
     },
     Command(
         "resend",
@@ -103,14 +103,6 @@ val commands = listOf(
         "showrole",
         "Show your role and the secret information you know",
     ) {
-        val state = STATES[interaction.channelId]
-        if (state !is GameState.RoledState) {
-            interaction.respondEphemeral {
-                content = "This channel does not currently have a game running"
-            }
-            return@Command
-        }
-
-        StartMessage.showRole(interaction)
+        interaction.tryShowRole()
     }
 )

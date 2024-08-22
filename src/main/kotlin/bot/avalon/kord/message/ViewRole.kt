@@ -2,9 +2,28 @@ package bot.avalon.kord.message
 
 import bot.avalon.data.GameState
 import bot.avalon.data.Role
+import bot.avalon.data.STATES
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.interaction.ActionInteraction
+
+suspend fun ActionInteraction.tryShowRole() {
+    val state = STATES[this.channelId]
+
+    if (state == null || state !is GameState.RoledState) {
+        respondEphemeral {
+            content = "This channel does not currently have a game running"
+        }
+        return
+    }
+
+    if (user as Member !in state.players) {
+        respondNotInGame()
+        return
+    }
+
+    showRole(state)
+}
 
 suspend fun ActionInteraction.showRole(state: GameState.RoledState) {
     val user = user as Member
