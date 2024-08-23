@@ -8,6 +8,7 @@ import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.Kord
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
@@ -25,9 +26,7 @@ object JoinMessage : GameMessageType<GameState.Join>() {
         embed {
             title = "New Game"
 
-            field("Players joined") {
-                if (state.players.isEmpty()) "None" else state.players.joinToString("\n") { it.mention }
-            }
+            description = if (state.players.isEmpty()) "None joined yet" else state.players.joinToString("\n") { it.mention }
         }
     }
 
@@ -76,9 +75,14 @@ object JoinMessage : GameMessageType<GameState.Join>() {
         componentId: String,
         setState: (GameState?) -> Unit
     ) {
-
         when (componentId) {
             START -> {
+                if (!state.isRolesValid) {
+                    interaction.respondPublic {
+                        content = "Not enough players to fill all selected roles, disable some or add more players"
+                    }
+                    return
+                }
                 interaction.disableComponents(defer = true)
                 with (GameState.Start(state)) {
                     interaction.state = this

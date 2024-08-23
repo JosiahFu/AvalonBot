@@ -63,5 +63,5 @@ val <T: GameState> T.messageType : GameMessageType<out GameState>
         is GameState.Proposal -> ProposalMessage
         is GameState.Questing -> QuestingMessage
         is GameState.Assassin -> AssassinMessage
-        else -> TODO()
+        else -> throw IllegalArgumentException()
     }

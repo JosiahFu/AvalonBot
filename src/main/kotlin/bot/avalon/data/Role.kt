@@ -66,6 +66,12 @@ fun getTeamSizes(players: Int): TeamSizes = when (players) {
     else -> throw IllegalArgumentException("Number of players must be between 5 and 10")
 }
 
+fun isRolesValid(players: Int, enabled: Collection<Role>): Boolean {
+    val (good, evil) = getTeamSizes(players)
+    val specialRoles = Role.entries.filter { !it.isDefault && (it in enabled || !it.isOptional) }
+    return good >= specialRoles.count { it.team == Team.GOOD } && evil >= specialRoles.count { it.team == Team.EVIL }
+}
+
 fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
     // TODO Remove this it's for testing
     if (players == 1) {

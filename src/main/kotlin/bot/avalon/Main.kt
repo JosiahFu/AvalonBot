@@ -14,6 +14,10 @@ import dev.kord.core.event.interaction.GuildComponentInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import io.github.cdimascio.dotenv.Dotenv
+import kotlinx.coroutines.launch
+import sun.misc.Signal
+import sun.misc.SignalHandler
+import kotlin.system.exitProcess
 
 suspend fun main() {
     val dotenv = Dotenv.load()
@@ -40,6 +44,15 @@ suspend fun main() {
         on<ReadyEvent> {
             println("Logged in!")
             loadGameState(this@with)
+
+            val logout = SignalHandler { launch {
+                println("\nLogging out...")
+                logout()
+                exitProcess(0)
+            } }
+
+            for (signal in listOf("INT", "TERM"))
+                Signal.handle(Signal(signal), logout)
         }
 
         login {
