@@ -54,9 +54,6 @@ data class TeamSizes(
 )
 
 fun getTeamSizes(players: Int): TeamSizes = when (players) {
-    2 -> TeamSizes(good = 1, evil = 1) // TODO this is temporary for testing
-    3 -> TeamSizes(good = 2, evil = 1) // TODO this is temporary for testing
-    4 -> TeamSizes(good = 3, evil = 1) // TODO this is temporary for testing
     5 -> TeamSizes(good = 3, evil = 2)
     6 -> TeamSizes(good = 4, evil = 2)
     7 -> TeamSizes(good = 4, evil = 3)
@@ -73,11 +70,6 @@ fun isRolesValid(players: Int, enabled: Collection<Role>): Boolean {
 }
 
 fun getRoles(players: Int, enabled: Collection<Role>): List<Role> {
-    // TODO Remove this it's for testing
-    if (players == 1) {
-        return listOf(Role.entries.random())
-    }
-
     val (good, evil) = getTeamSizes(players)
     val specialRoles = Role.entries.filter { !it.isDefault && (!it.isOptional || it in enabled) }
 

@@ -35,7 +35,7 @@ sealed interface GameState {
         override var message: MessageId? = null,
     ) : GameState {
         val canStart: Boolean
-            get() = players.size in 5..10 || players.size in 1..5 // TODO Remove this it's for testing
+            get() = players.size in 5..10
 
         val isRolesValid: Boolean
             get() = isRolesValid(players.size, optionalRoles)
