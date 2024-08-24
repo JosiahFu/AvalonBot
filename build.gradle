@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0'
@@ -18,7 +16,6 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${project.kserialization_version}"
     implementation "dev.kord:kord-core:${project.kord_version}"
     implementation "io.github.cdimascio:dotenv-kotlin:${project.kdotenv_version}"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:${project.kreflect_version}"
     implementation "org.slf4j:slf4j-simple:${project.slf4j_version}"
 }
 
