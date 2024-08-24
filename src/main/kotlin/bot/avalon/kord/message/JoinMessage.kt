@@ -13,6 +13,7 @@ import dev.kord.core.entity.interaction.GuildComponentInteraction
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.actionRow
 import dev.kord.rest.builder.message.embed
+import kotlinx.coroutines.delay
 
 object JoinMessage : GameMessageType<GameState.Join>() {
     private const val START = "start_game"
@@ -90,8 +91,11 @@ object JoinMessage : GameMessageType<GameState.Join>() {
                 }
             }
             CANCEL -> {
+                val message = state.message!!
                 interaction.disableComponents(defer = true)
                 setState(null)
+                delay(5000)
+                message.delete()
             }
             JOIN -> {
                 if (state.players.add(interaction.user)) {
