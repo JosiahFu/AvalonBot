@@ -53,6 +53,10 @@ suspend fun main() {
 
             for (signal in listOf("INT", "TERM"))
                 Signal.handle(Signal(signal), logout)
+
+            editPresence {
+                playing("/start")
+            }
         }
 
         login {
